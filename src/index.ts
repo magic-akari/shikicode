@@ -92,6 +92,15 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 		output.innerHTML = codeToHtml(input.value);
 	};
 
+	output.addEventListener("click", () => {
+		input.style.pointerEvents = "auto";
+	});
+	output.addEventListener("mouseover", e => {
+		console.log(e.target);
+	});
+	input.addEventListener("mouseup", () => {
+		input.style.pointerEvents = "";
+	});
 	input.addEventListener("input", render);
 
 	if (options?.value) {
