@@ -1,4 +1,4 @@
-import { getHighlighter, type BundledLanguage, type BundledTheme } from "shiki";
+import { getHighlighter, type BundledLanguage, type BundledTheme } from 'shiki'
 import { hookIndent, hookOutdent } from "./tab.js";
 import { hookBracket } from "./bracket.js";
 
@@ -67,12 +67,29 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	});
 
 	const render = async () => {
-		const { codeToHtml } = await highlighter;
+		const { codeToTokens } = await highlighter;
 
-		output.innerHTML = codeToHtml(input.value, {
-			lang: "javascript",
-			theme: "github-light",
-		});
+		const codeToHtml = (code: string) => {
+			const {
+				tokens: tokensLines,
+				fg, bg,
+				themeName,
+				rootStyle
+			} = codeToTokens(code, {
+				lang: "javascript",
+				theme: "github-light",
+			});
+			const lines = tokensLines.map((tokenLine, index) => (`<span class="line">${
+				tokenLine
+					.map(token => `<span class="${
+						`position:${index + 1}:${token.offset + 1},${token.offset + 1 + token.content.length}` + " " +
+						`font-style:${token.fontStyle}`
+					}" style="color: ${token.color}">${token.content}</span>`)
+					.join("")
+			}</span>`))
+			return `<pre class="shiki ${themeName}" style="background-color:${bg};color:${fg};${rootStyle ? rootStyle : ''}" tabindex="0"><code>${lines}</code></pre>`
+		}
+		output.innerHTML = codeToHtml(input.value);
 	};
 
 	input.addEventListener("input", render);
