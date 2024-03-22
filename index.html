@@ -53,6 +53,10 @@
 		.shiki-editor.output {
 			counter-reset: shiki-line 0;
 		}
+
+		.shiki-editor.output > pre {
+			background-color: transparent !important;
+		}
 		.shiki-editor.output .line {
 			counter-increment: shiki-line 1;
 		}
@@ -85,7 +89,7 @@
 		import { create } from "./lib/index.js";
 		const element = create(container, {
 			value: `console.log("Hello, shiki-editor 👋!")`,
-			theme: "github-dark"
+			theme: "github-dark",
 		});
 		</script>
 	</body>

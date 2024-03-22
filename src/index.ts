@@ -84,11 +84,7 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 
 		output.innerHTML = codeToHtml(input.value, {
 			lang: "javascript",
-			theme: {
-				...theme,
-				name: `${theme_name}_without_bg`,
-				bg: "transparent",
-			},
+			theme,
 		});
 	};
 
