@@ -1,0 +1,23 @@
+{
+	"name": "shiki-editor",
+	"version": "0.0.0",
+	"description": "lightweight code editor powered by shiki",
+	"main": "lib/index.js",
+	"type": "module",
+	"scripts": {
+		"start": "tsc --watch",
+		"build": "tsc"
+	},
+	"keywords": ["shiki", "editor"],
+	"author": "magic-akari <akari.ccino@gmail.com>",
+	"license": "MIT",
+	"bugs": "https://github.com/magic-akari/shiki-editor/issues",
+	"homepage": "https://github.com/magic-akari/shiki-editor#readme",
+	"dependencies": {
+		"shiki": "^1.2.0"
+	},
+	"devDependencies": {
+		"dprint": "^0.45.0",
+		"typescript": "^5.4.3"
+	}
+}

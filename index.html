@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Document</title>
+		<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			font-family: sans-serif;
+			font-size: 16px;
+		}
+
+		#container {
+			width: 100%;
+			height: 100vh;
+			position: relative;
+		}
+
+		.shiki-editor.input, .shiki-editor.output {
+			position: absolute;
+			inset: 0;
+			left: 5em;
+			margin: 0;
+			padding: 0;
+			border: 0;
+			font-family: var(--font-family, monospace);
+			font-size: inherit;
+		}
+
+		.shiki-editor.output pre {
+			margin: 0;
+		}
+
+		.shiki-editor.input {
+			resize: none;
+			color: transparent;
+			caret-color: var(--caret-color, black);
+			background-color: transparent;
+			outline: none;
+		}
+
+		.shiki-editor.output {
+			pointer-events: none;
+		}
+
+		.shiki-editor.output {
+			counter-reset: lines 0;
+		}
+		.shiki-editor.output .line {
+			counter-increment: lines 1;
+		}
+
+		.shiki-editor.output .line::before {
+			content: counter(lines);
+			position: absolute;
+			left: -5em;
+			width: 3em;
+			text-align: right;
+		}
+		</style>
+	</head>
+
+	<body>
+		<div id="container"></div>
+		<script type="importmap">
+		{
+			"imports": {
+				"shiki": "https://esm.run/shiki"
+			}
+		}
+		</script>
+		<script type="module">
+		import { create } from "./lib/index.js";
+		const element = create(container, {});
+		</script>
+	</body>
+</html>

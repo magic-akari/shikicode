@@ -1,0 +1,12 @@
+{
+	"editor.defaultFormatter": "dprint.dprint",
+	"[html]": {
+		"editor.defaultFormatter": "dprint.dprint"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "dprint.dprint"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "dprint.dprint"
+	}
+}

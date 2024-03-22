@@ -1,0 +1,13 @@
+{
+	"useTabs": true,
+	"indentWidth": 4,
+	"lineWidth": 120,
+	"includes": ["*.{ts,json,md,html}"],
+	"excludes": ["**/lib", "**/node_modules", "**/*-lock.json"],
+	"plugins": [
+		"https://plugins.dprint.dev/biome-0.4.1.wasm",
+		"https://plugins.dprint.dev/g-plane/malva-v0.1.5.wasm",
+		"https://plugins.dprint.dev/g-plane/markup_fmt-v0.6.0.wasm",
+		"https://plugins.dprint.dev/markdown-0.16.4.wasm"
+	]
+}
