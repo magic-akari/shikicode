@@ -1,6 +1,7 @@
 import { getHighlighter, type BundledLanguage, type BundledTheme } from "shiki";
-import { hookIndent, hookOutdent } from "./tab.js";
 import { hookBracket } from "./bracket.js";
+import { hookScroll } from "./scroll.js";
+import { hookIndent, hookOutdent } from "./tab.js";
 
 interface EditorOptions {
 	value?: string;
@@ -58,6 +59,11 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	output.classList.add("shiki-editor", "output");
 	input.classList.add("shiki-editor", "input");
 
+	if (options?.lineNumbers !== "off") {
+		output.classList.add("line-numbers");
+		input.classList.add("line-numbers");
+	}
+
 	domElement.appendChild(output);
 	domElement.appendChild(input);
 
@@ -89,6 +95,7 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 		hookIndent(input, options?.tabSize ?? 4, options?.insertSpaces ?? true),
 		hookOutdent(input, options?.tabSize ?? 4, options?.insertSpaces ?? true),
 		hookBracket(input),
+		hookScroll(input, output),
 		() => {
 			domElement.removeChild(input);
 			domElement.removeChild(output);

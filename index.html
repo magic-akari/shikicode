@@ -21,12 +21,16 @@
 		.shiki-editor.input, .shiki-editor.output {
 			position: absolute;
 			inset: 0;
-			left: 5em;
 			margin: 0;
 			padding: 0;
+			padding-left: 2em;
 			border: 0;
 			font-family: var(--font-family, monospace);
 			font-size: inherit;
+		}
+
+		.shiki-editor.input.line-numbers, .shiki-editor.output.line-numbers {
+			padding-left: 5em;
 		}
 
 		.shiki-editor.output pre {
@@ -42,22 +46,27 @@
 		}
 
 		.shiki-editor.output {
-			pointer-events: none;
+			overflow: hidden;
 		}
 
 		.shiki-editor.output {
-			counter-reset: lines 0;
+			counter-reset: shiki-line 0;
 		}
 		.shiki-editor.output .line {
-			counter-increment: lines 1;
+			counter-increment: shiki-line 1;
 		}
 
 		.shiki-editor.output .line::before {
-			content: counter(lines);
+			visibility: hidden;
+			content: counter(shiki-line);
 			position: absolute;
-			left: -5em;
+			left: 0;
 			width: 3em;
 			text-align: right;
+		}
+
+		.shiki-editor.output.line-numbers .line::before {
+			visibility: visible;
 		}
 		</style>
 	</head>
