@@ -1,4 +1,4 @@
-import { getHighlighter, type BundledLanguage, type BundledTheme } from 'shiki'
+import { getHighlighter, type BundledLanguage, type BundledTheme } from "shiki";
 import { hookIndent, hookOutdent } from "./tab.js";
 import { hookBracket } from "./bracket.js";
 
