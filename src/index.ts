@@ -77,6 +77,11 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 
 	input.addEventListener("input", render);
 
+	if (options?.value) {
+		input.value = options.value;
+	}
+	render();
+
 	const cleanup = [
 		() => {
 			input.removeEventListener("input", render);

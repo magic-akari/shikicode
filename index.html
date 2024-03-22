@@ -73,7 +73,9 @@
 		</script>
 		<script type="module">
 		import { create } from "./lib/index.js";
-		const element = create(container, {});
+		const element = create(container, {
+			value: `console.log("Hello, shiki-editor 👋!")`,
+		});
 		</script>
 	</body>
 </html>
