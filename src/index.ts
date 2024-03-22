@@ -64,20 +64,31 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 		input.classList.add("line-numbers");
 	}
 
-	domElement.appendChild(output);
 	domElement.appendChild(input);
+	domElement.appendChild(output);
+
+	const theme_name = options?.theme ?? "github-light";
 
 	const highlighter = getHighlighter({
-		themes: ["github-light"],
+		themes: [theme_name],
 		langs: ["javascript"],
 	});
 
 	const render = async () => {
-		const { codeToHtml } = await highlighter;
+		const { codeToHtml, getTheme } = await highlighter;
+
+		const theme = getTheme(theme_name);
+		domElement.style.backgroundColor = theme.bg;
+		domElement.style.color = theme.fg;
+		domElement.style.setProperty("--caret-color", theme.fg);
 
 		output.innerHTML = codeToHtml(input.value, {
 			lang: "javascript",
-			theme: "github-light",
+			theme: {
+				...theme,
+				name: `${theme_name}_without_bg`,
+				bg: "transparent",
+			},
 		});
 	};
 
