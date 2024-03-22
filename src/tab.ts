@@ -11,7 +11,7 @@ function indent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boole
 	const end_at_line_end = end === value_length || value[end] === "\n" || value[end] === "\r";
 	const select_both_ends = start !== end && start_at_line_start && end_at_line_end;
 
-	if (select_both_ends || is_multiline(value, start, end)) {
+	if (select_both_ends || isMultiLine(value, start, end)) {
 		const replacement = value.slice(line_start, line_end).replaceAll(/^[ \t]*/gm, (leading, offset, str) => {
 			if (str[offset] === "\n" || str[offset] === "\r" || offset === line_end) return leading;
 
@@ -105,7 +105,7 @@ function getLineEnd(value: string, index: number) {
 	return index;
 }
 
-function is_multiline(value: string, start: number, end: number) {
+function isMultiLine(value: string, start: number, end: number) {
 	for (let i = start; i < end; i++) {
 		if (value[i] === "\n") {
 			return true;
