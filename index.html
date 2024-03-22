@@ -85,6 +85,7 @@
 		import { create } from "./lib/index.js";
 		const element = create(container, {
 			value: `console.log("Hello, shiki-editor 👋!")`,
+			theme: "github-dark",
 			onHoverElement: (range, { element }) => {
 				console.log(range, element);
 			},
