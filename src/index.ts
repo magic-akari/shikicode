@@ -86,17 +86,33 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	output.classList.add("shiki-editor", "output");
 	input.classList.add("shiki-editor", "input");
 
-	domElement.appendChild(output);
+	input.setAttribute("autocapitalize", "off");
+	input.setAttribute("autocomplete", "off");
+	input.setAttribute("autocorrect", "off");
+	input.setAttribute("spellcheck", "false");
+
+	if (options?.lineNumbers !== "off") {
+		output.classList.add("line-numbers");
+		input.classList.add("line-numbers");
+	}
+
 	domElement.appendChild(input);
+	domElement.appendChild(output);
+
+	const theme_name = options?.theme ?? "github-light";
 
 	const highlighter = getHighlighter({
-		themes: ["github-light"],
+		themes: [theme_name],
 		langs: ["javascript"],
 	});
 
 	const render = async () => {
-		const { codeToTokens } = await highlighter;
+		const { codeToTokens, getTheme } = await highlighter;
 
+		const theme = getTheme(theme_name);
+		domElement.style.backgroundColor = theme.bg;
+		domElement.style.color = theme.fg;
+		domElement.style.setProperty("--caret-color", theme.fg);
 		const codeToHtml = (code: string) => {
 			const {
 				tokens: tokensLines,
@@ -105,7 +121,7 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 				rootStyle
 			} = codeToTokens(code, {
 				lang: "javascript",
-				theme: "github-light",
+				theme: theme,
 			});
 			const lines = tokensLines.map((tokenLine, index) => (`<span class="line">${
 				tokenLine
