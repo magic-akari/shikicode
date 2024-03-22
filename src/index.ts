@@ -3,6 +3,19 @@ import { hookBracket } from "./bracket.js";
 import { hookScroll } from "./scroll.js";
 import { hookIndent, hookOutdent } from "./tab.js";
 
+interface TextRange {
+	offset: number;
+	line: number;
+	start: number;
+	end: number;
+}
+
+interface OnHoverElementContext {
+	content: string;
+	element: Element;
+	raw: string;
+}
+
 interface EditorOptions {
 	value?: string;
 	language: BundledLanguage;
@@ -30,6 +43,8 @@ interface EditorOptions {
 	 * Defaults to true.
 	 */
 	insertSpaces?: boolean;
+
+	onHoverElement?: (range: TextRange, context: OnHoverElementContext) => void;
 }
 
 const defaultOptions: EditorOptions = {
@@ -43,11 +58,23 @@ const defaultOptions: EditorOptions = {
 };
 
 interface ICodeEditor {
+	value: string;
 	updateOptions(options: EditorOptions): void;
 	/**
 	 * Dispose the editor.
 	 */
 	dispose(): void;
+}
+
+function throttle<T extends (...args: any[]) => void>(fn: T, delay: number) {
+	let last = 0;
+	return (...args: any[]) => {
+		const now = Date.now();
+		if (now - last >= delay) {
+			fn(...args);
+			last = now;
+		}
+	};
 }
 
 export function create(domElement: HTMLElement, options?: EditorOptions): ICodeEditor {
@@ -59,40 +86,93 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	output.classList.add("shiki-editor", "output");
 	input.classList.add("shiki-editor", "input");
 
-	input.setAttribute("autocapitalize", "off");
-	input.setAttribute("autocomplete", "off");
-	input.setAttribute("autocorrect", "off");
-	input.setAttribute("spellcheck", "false");
-
-	if (options?.lineNumbers !== "off") {
-		output.classList.add("line-numbers");
-		input.classList.add("line-numbers");
-	}
-
-	domElement.appendChild(input);
 	domElement.appendChild(output);
-
-	const theme_name = options?.theme ?? "github-light";
+	domElement.appendChild(input);
 
 	const highlighter = getHighlighter({
-		themes: [theme_name],
+		themes: ["github-light"],
 		langs: ["javascript"],
 	});
 
 	const render = async () => {
-		const { codeToHtml, getTheme } = await highlighter;
+		const { codeToTokens } = await highlighter;
 
-		const theme = getTheme(theme_name);
-		domElement.style.backgroundColor = theme.bg;
-		domElement.style.color = theme.fg;
-		domElement.style.setProperty("--caret-color", theme.fg);
-
-		output.innerHTML = codeToHtml(input.value, {
-			lang: "javascript",
-			theme,
-		});
+		const codeToHtml = (code: string) => {
+			const {
+				tokens: tokensLines,
+				fg, bg,
+				themeName,
+				rootStyle
+			} = codeToTokens(code, {
+				lang: "javascript",
+				theme: "github-light",
+			});
+			const lines = tokensLines.map((tokenLine, index) => (`<span class="line">${
+				tokenLine
+					.map(token => `<span class="${
+						`offset:${token.offset} ` +
+						`position:${index + 1}:${token.offset + 1},${token.offset + 1 + token.content.length} ` +
+						`font-style:${token.fontStyle}`
+					}" style="color: ${token.color}">${token.content}</span>`)
+					.join("")
+			}</span>`))
+			return `<pre class="shiki ${themeName}" style="background-color:${bg};color:${fg};${rootStyle ? rootStyle : ''}" tabindex="0"><code>${lines}</code></pre>`
+		}
+		output.innerHTML = codeToHtml(input.value);
 	};
 
+	if (options?.onHoverElement) {
+		let prevOutputHoverElement: Element | null = null;
+		input.addEventListener("mousemove", throttle(e => {
+			input.style.pointerEvents = "none";
+			output.style.pointerEvents = "auto";
+			const outputHoverElement = document.elementFromPoint(e.clientX, e.clientY);
+			input.style.pointerEvents = "";
+			output.style.pointerEvents = "";
+			if (outputHoverElement === prevOutputHoverElement) {
+				return;
+			}
+			prevOutputHoverElement = outputHoverElement;
+			if (outputHoverElement === null) {
+				return;
+			}
+			if (
+				outputHoverElement.className.includes("shiki-editor")
+				&& outputHoverElement.className.includes("output")
+			) {
+				return;
+			}
+
+			if (!outputHoverElement?.className.includes("position")) {
+				return;
+			}
+
+			const offsetStr = /offset:(\d+)/
+				.exec(outputHoverElement.className)
+				?.[1];
+			if (!offsetStr) {
+				return;
+			}
+			const offset = Number(offsetStr);
+			if (isNaN(offset)) {
+				return;
+			}
+			const [line, start, end] = /position:(\d+):(\d+),(\d+)/
+				.exec(outputHoverElement.className)
+				?.slice(1)
+				?.map(Number)
+				?? [];
+			if (!line || !start || !end || [line, start, end].some(isNaN)) {
+				return;
+			}
+
+			options.onHoverElement!({ offset, line: line, start: start, end: end }, {
+				content: input.value.slice(start - 1, end - 1),
+				element: outputHoverElement,
+				raw: input.value,
+			});
+		}, 50));
+	}
 	input.addEventListener("input", render);
 
 	if (options?.value) {
@@ -115,6 +195,13 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	];
 
 	return {
+		get value() {
+			return input.value;
+		},
+		set value(value: string) {
+			input.value = value;
+			render();
+		},
 		updateOptions: (newOptions: EditorOptions) => {
 			console.log("updateOptions", newOptions);
 		},
