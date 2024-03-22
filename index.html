@@ -15,7 +15,6 @@
 		#container {
 			width: 100%;
 			height: 100vh;
-			position: relative;
 		}
 
 		.shiki-editor.input, .shiki-editor.output {
@@ -33,30 +32,27 @@
 			padding-left: 5em;
 		}
 
-		.shiki-editor.output pre {
-			margin: 0;
-		}
-
 		.shiki-editor.input {
 			resize: none;
 			color: transparent;
 			caret-color: var(--caret-color, black);
 			background-color: transparent;
 			outline: none;
+			overflow: auto;
+			white-space: pre;
 		}
 
 		.shiki-editor.output {
 			overflow: hidden;
 			pointer-events: none;
-		}
-
-		.shiki-editor.output {
 			counter-reset: shiki-line 0;
 		}
 
 		.shiki-editor.output > pre {
+			margin: 0;
 			background-color: transparent !important;
 		}
+
 		.shiki-editor.output .line {
 			counter-increment: shiki-line 1;
 		}

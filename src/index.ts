@@ -59,6 +59,11 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 	output.classList.add("shiki-editor", "output");
 	input.classList.add("shiki-editor", "input");
 
+	input.setAttribute("autocapitalize", "off");
+	input.setAttribute("autocomplete", "off");
+	input.setAttribute("autocorrect", "off");
+	input.setAttribute("spellcheck", "false");
+
 	if (options?.lineNumbers !== "off") {
 		output.classList.add("line-numbers");
 		input.classList.add("line-numbers");
