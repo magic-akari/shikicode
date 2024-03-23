@@ -208,12 +208,15 @@ function shouldUpdateIO(config: FullOptions, newOptions: UpdateOptions) {
 }
 
 function updateIO(input: HTMLTextAreaElement, output: HTMLElement, options: UpdateOptions) {
-	if (options.lineNumbers !== "off") {
-		input.classList.add("line-numbers");
-		output.classList.add("line-numbers");
-	} else {
-		input.classList.remove("line-numbers");
-		output.classList.remove("line-numbers");
+	switch (options.lineNumbers) {
+		case "on": {
+			input.classList.add("line-numbers");
+			output.classList.add("line-numbers");
+		}
+		case "off": {
+			input.classList.remove("line-numbers");
+			output.classList.remove("line-numbers");
+		}
 	}
 
 	if (typeof options.tabSize !== "undefined") {
