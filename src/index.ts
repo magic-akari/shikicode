@@ -2,6 +2,7 @@ import { getHighlighter, type Highlighter, type BundledLanguage, type BundledThe
 import { hookBracket } from "./bracket.js";
 import { hookScroll } from "./scroll.js";
 import { hookIndent, hookOutdent } from "./tab.js";
+import { injectStyle } from "./style.js";
 
 interface UpdateOptions {
 	language?: BundledLanguage;
@@ -110,6 +111,7 @@ export function create(domElement: HTMLElement, options?: InitOptions): ICodeEdi
 		hookOutdent(input, config),
 		hookBracket(input),
 		hookScroll(input, output),
+		injectStyle(doc),
 		() => {
 			domElement.removeChild(input);
 			domElement.removeChild(output);
