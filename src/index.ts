@@ -214,10 +214,12 @@ function updateIO(input: HTMLTextAreaElement, output: HTMLElement, options: Upda
 		case "on": {
 			input.classList.add("line-numbers");
 			output.classList.add("line-numbers");
+			break;
 		}
 		case "off": {
 			input.classList.remove("line-numbers");
 			output.classList.remove("line-numbers");
+			break;
 		}
 	}
 
