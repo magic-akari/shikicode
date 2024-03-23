@@ -30,10 +30,12 @@
 		</script>
 		<script type="module">
 		import { create } from "./lib/index.js";
-		window.editor = create(container, {
+		create(container, {
 			value: `console.log("Hello, shiki-editor 👋!")`,
 			language: "tsx",
 			theme: "github-dark",
+		}).then((editor) => {
+			window.editor = editor;
 		});
 		</script>
 	</body>
