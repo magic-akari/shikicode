@@ -44,7 +44,9 @@ export function hookBracket(input: HTMLTextAreaElement) {
 		const prev_char = input.value[next_p - 1];
 		const next_char = input.value[next_p];
 
-		if (isBackspace(e) && prev_char in l2r && next_char === l2r[prev_char]) {
+		const _split_ = prev_char in l2r && next_char === l2r[prev_char];
+
+		if (isBackspace(e) && _split_) {
 			input.setSelectionRange(next_p - 1, next_p + 1);
 			return;
 		}
@@ -54,7 +56,7 @@ export function hookBracket(input: HTMLTextAreaElement) {
 			return;
 		}
 
-		if (e.key in l2r && (next_p === input.value.length || /\s/.test(next_char))) {
+		if (e.key in l2r && (next_p === input.value.length || _split_ || /\s/.test(next_char))) {
 			input.setRangeText(l2r[e.key]!, next_p, next_p);
 		}
 	};
