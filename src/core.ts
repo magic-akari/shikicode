@@ -1,9 +1,10 @@
-import type { Highlighter, BundledLanguage, BundledTheme } from "shiki";
 import type * as Shiki from "shiki";
+import type { BundledLanguage, BundledTheme, Highlighter } from "shiki";
+
 import { hookBracket } from "./bracket.js";
 import { hookScroll } from "./scroll.js";
-import { hookIndent, hookOutdent } from "./tab.js";
 import { injectStyle } from "./style.js";
+import { hookIndent, hookOutdent } from "./tab.js";
 
 export interface UpdateOptions {
 	language?: BundledLanguage;
