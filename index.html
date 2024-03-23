@@ -22,20 +22,16 @@
 			inset: 0;
 			margin: 0;
 			padding: 0;
-			padding-left: 2em;
 			border: 0;
 			font-family: var(--font-family, monospace);
 			font-size: inherit;
 		}
 
-		.shiki-editor.input.line-numbers, .shiki-editor.output.line-numbers {
-			padding-left: 5em;
-		}
-
 		.shiki-editor.input {
+			padding-left: 2em;
 			resize: none;
 			color: transparent;
-			caret-color: var(--caret-color, black);
+			caret-color: var(--fg, black);
 			background-color: transparent;
 			outline: none;
 			overflow: auto;
@@ -49,25 +45,33 @@
 		}
 
 		.shiki-editor.output > pre {
-			margin: 0;
-			background-color: transparent !important;
+			display: contents;
 		}
 
 		.shiki-editor.output .line {
 			counter-increment: shiki-line 1;
 		}
 
+		.shiki-editor.input.line-numbers {
+			padding-left: 5em;
+		}
+
 		.shiki-editor.output .line::before {
-			visibility: hidden;
 			content: counter(shiki-line);
-			position: absolute;
+			color: var(--bg);
+			background-color: var(--bg);
+			display: inline-block;
+			position: sticky;
 			left: 0;
-			width: 3em;
+			width: 2em;
 			text-align: right;
+			box-sizing: border-box;
 		}
 
 		.shiki-editor.output.line-numbers .line::before {
-			visibility: visible;
+			color: var(--fg);
+			width: 5em;
+			padding-right: 2em;
 		}
 		</style>
 	</head>

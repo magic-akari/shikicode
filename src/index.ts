@@ -85,7 +85,8 @@ export function create(domElement: HTMLElement, options?: EditorOptions): ICodeE
 		const theme = getTheme(theme_name);
 		domElement.style.backgroundColor = theme.bg;
 		domElement.style.color = theme.fg;
-		domElement.style.setProperty("--caret-color", theme.fg);
+		domElement.style.setProperty("--fg", theme.fg);
+		domElement.style.setProperty("--bg", theme.bg);
 
 		output.innerHTML = codeToHtml(input.value, {
 			lang: "javascript",
