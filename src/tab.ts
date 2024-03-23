@@ -1,4 +1,11 @@
-function indent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boolean) {
+interface IndentConfig {
+	tabSize: number;
+	insertSpaces: boolean;
+}
+
+function indent(input: HTMLTextAreaElement, config: IndentConfig) {
+	const { tabSize, insertSpaces } = config;
+
 	const start = input.selectionStart;
 	const end = input.selectionEnd;
 	const value = input.value;
@@ -37,11 +44,11 @@ function indent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boole
 	input.dispatchEvent(new Event("input"));
 }
 
-export function hookIndent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boolean) {
+export function hookIndent(input: HTMLTextAreaElement, config: IndentConfig) {
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key !== "Tab" || e.shiftKey) return;
 		e.preventDefault();
-		indent(e.target as HTMLTextAreaElement, tabSize, insertSpaces);
+		indent(e.target as HTMLTextAreaElement, config);
 	};
 
 	input.addEventListener("keydown", onKeydown);
@@ -50,7 +57,9 @@ export function hookIndent(input: HTMLTextAreaElement, tabSize: number, insertSp
 	};
 }
 
-function outdent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boolean) {
+function outdent(input: HTMLTextAreaElement, config: IndentConfig) {
+	const { tabSize, insertSpaces } = config;
+
 	const start = input.selectionStart;
 	const end = input.selectionEnd;
 	const value = input.value;
@@ -74,11 +83,11 @@ function outdent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: bool
 	input.dispatchEvent(new Event("input"));
 }
 
-export function hookOutdent(input: HTMLTextAreaElement, tabSize: number, insertSpaces: boolean) {
+export function hookOutdent(input: HTMLTextAreaElement, config: IndentConfig) {
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key !== "Tab" || !e.shiftKey) return;
 		e.preventDefault();
-		outdent(e.target as HTMLTextAreaElement, tabSize, insertSpaces);
+		outdent(e.target as HTMLTextAreaElement, config);
 	};
 
 	input.addEventListener("keydown", onKeydown);

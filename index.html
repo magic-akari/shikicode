@@ -25,6 +25,7 @@
 			border: 0;
 			font-family: var(--font-family, monospace);
 			font-size: inherit;
+			tab-size: var(--tab-size);
 		}
 
 		.shiki-editor.input {
@@ -87,8 +88,9 @@
 		</script>
 		<script type="module">
 		import { create } from "./lib/index.js";
-		const element = create(container, {
+		window.editor = create(container, {
 			value: `console.log("Hello, shiki-editor 👋!")`,
+			language: "tsx",
 			theme: "github-dark",
 		});
 		</script>
