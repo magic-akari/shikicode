@@ -8,19 +8,54 @@
 		html, body {
 			margin: 0;
 			padding: 0;
-			font-family: sans-serif;
-			font-size: 16px;
+		}
+
+		.main {
+			margin: 100px;
+			display: grid;
+			justify-items: center;
+		}
+
+		.editor-header {
+			position: absolute;
+			height: 40px;
+			top: -40px;
+			width: 100%;
+			color: inherit;
+			background-color: inherit;
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			padding-inline: 20px;
+			box-sizing: border-box;
+			border-radius: 8px 8px 0 0;
+		}
+
+		.editor-header select {
+			color: inherit;
+			background: inherit;
+			border-color: transparent;
 		}
 
 		#container {
-			width: 100%;
-			height: 100vh;
+			width: 1000px;
+			height: 800px;
+			border-radius: 0 0 8px 8px;
+			font-size: 14px;
+			line-height: 1.7;
 		}
 		</style>
 	</head>
 
 	<body>
-		<div id="container"></div>
+		<main class="main">
+			<div id="container">
+				<header class="editor-header">
+					<select id="lang_list"></select>
+					<select id="theme_list"></select>
+				</header>
+			</div>
+		</main>
 		<script type="importmap">
 		{
 			"imports": {
@@ -30,12 +65,46 @@
 		</script>
 		<script type="module">
 		import { create } from "./lib/index.js";
+
+		import { bundledLanguagesInfo, bundledThemesInfo } from "shiki";
+
+		bundledLanguagesInfo.forEach((lang) => {
+			const option = document.createElement("option");
+			option.value = lang.id;
+			option.textContent = lang.name;
+			lang_list.appendChild(option);
+		});
+
+		bundledThemesInfo.forEach((theme) => {
+			const option = document.createElement("option");
+			option.value = theme.id;
+			option.textContent = theme.displayName;
+			theme_list.appendChild(option);
+		});
+
+		const theme = "github-dark";
+		const language = "tsx";
+
+		lang_list.value = language;
+		theme_list.value = theme;
+
 		create(container, {
 			value: `console.log("Hello, shiki-editor 👋!")`,
-			language: "tsx",
-			theme: "github-dark",
+			language,
+			theme,
 		}).then((editor) => {
 			window.editor = editor;
+
+			lang_list.addEventListener("change", (e) => {
+				editor.updateOptions({
+					language: e.target.value,
+				});
+			});
+			theme_list.addEventListener("change", (e) => {
+				editor.updateOptions({
+					theme: e.target.value,
+				});
+			});
 		});
 		</script>
 	</body>

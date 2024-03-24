@@ -1,6 +1,7 @@
 const style = `.shiki-editor.input, .shiki-editor.output {
 	font-family: var(--font-family, monospace);
 	font-size: inherit;
+	line-height: inherit;
 	tab-size: var(--tab-size);
 	border: 0;
 	margin: 0;
