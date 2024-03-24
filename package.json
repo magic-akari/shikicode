@@ -6,7 +6,10 @@
 	"type": "module",
 	"scripts": {
 		"start": "tsc --watch",
-		"build": "tsc"
+		"build": "tsc",
+		"fix:fmt": "dprint fmt",
+		"check:fmt": "dprint check",
+		"check:lint": "oxlint src -D correctness -D pedantic"
 	},
 	"keywords": ["shiki", "editor"],
 	"author": "magic-akari <akari.ccino@gmail.com>",
@@ -15,6 +18,7 @@
 	"homepage": "https://github.com/magic-akari/shiki-editor#readme",
 	"devDependencies": {
 		"dprint": "^0.45.0",
+		"oxlint": "^0.2.14",
 		"shiki": "^1.2.0",
 		"typescript": "^5.4.3"
 	},

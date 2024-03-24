@@ -72,14 +72,14 @@
 			const option = document.createElement("option");
 			option.value = lang.id;
 			option.textContent = lang.name;
-			lang_list.appendChild(option);
+			lang_list.append(option);
 		});
 
 		bundledThemesInfo.forEach((theme) => {
 			const option = document.createElement("option");
 			option.value = theme.id;
 			option.textContent = theme.displayName;
-			theme_list.appendChild(option);
+			theme_list.append(option);
 		});
 
 		const theme = "github-dark";

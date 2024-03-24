@@ -7,6 +7,6 @@
 		"moduleResolution": "bundler",
 		"forceConsistentCasingInFileNames": true,
 		"rootDir": "./src",
-		"outDir": "./lib",
+		"outDir": "./lib"
 	}
 }

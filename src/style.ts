@@ -68,17 +68,17 @@ export function injectStyle(doc: Document) {
 	if (doc.getElementById(hash)) return noop;
 	const element = doc.createElement("style");
 	element.id = hash;
-	element.appendChild(doc.createTextNode(""));
-	doc.head.appendChild(element);
+	element.append(doc.createTextNode(""));
+	doc.head.append(element);
 
 	try {
 		const sheet = getSheet(element, doc);
 		sheet.insertRule(style);
 	} catch (e) {
-		element.appendChild(doc.createTextNode(style));
+		element.append(doc.createTextNode(style));
 	}
 	return () => {
-		doc.head.removeChild(element);
+		element.remove();
 	};
 }
 
@@ -106,5 +106,5 @@ function getSheet(tag: HTMLStyleElement, doc: Document): CSSStyleSheet {
 		}
 	}
 
-	throw Error("Could not find CSSStyleSheet object");
+	throw new Error("Could not find CSSStyleSheet object");
 }

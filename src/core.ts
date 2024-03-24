@@ -118,8 +118,8 @@ export function createWithHighlighter(
 	initIO(input, output);
 	initContainer(domElement);
 
-	domElement.appendChild(input);
-	domElement.appendChild(output);
+	domElement.append(input);
+	domElement.append(output);
 
 	updateIO(input, output, config);
 	updateContainer(domElement, highlighter, config.theme);
@@ -144,8 +144,8 @@ export function createWithHighlighter(
 		hookScroll(input, output),
 		injectStyle(doc),
 		() => {
-			domElement.removeChild(input);
-			domElement.removeChild(output);
+			input.remove();
+			output.remove();
 		},
 	];
 
@@ -252,7 +252,7 @@ function initContainer(container: HTMLElement) {
 }
 
 function shouldUpdateContainer(config: FullOptions, newOptions: UpdateOptions) {
-	return typeof newOptions.theme !== "undefined" && newOptions.theme !== config.theme;
+	return newOptions.theme !== void 0 && newOptions.theme !== config.theme;
 }
 
 function updateContainer(container: HTMLElement, highlighter: Highlighter, theme_name: string) {
@@ -273,9 +273,9 @@ function initIO(input: HTMLTextAreaElement, output: HTMLElement) {
 
 function shouldUpdateIO(config: FullOptions, newOptions: UpdateOptions) {
 	return (
-		(typeof newOptions.lineNumbers !== "undefined" && newOptions.lineNumbers !== config.lineNumbers) ||
-		(typeof newOptions.tabSize !== "undefined" && newOptions.tabSize !== config.tabSize) ||
-		(typeof newOptions.readOnly !== "undefined" && newOptions.readOnly !== config.readOnly)
+		(newOptions.lineNumbers !== void 0 && newOptions.lineNumbers !== config.lineNumbers) ||
+		(newOptions.tabSize !== void 0 && newOptions.tabSize !== config.tabSize) ||
+		(newOptions.readOnly !== void 0 && newOptions.readOnly !== config.readOnly)
 	);
 }
 
@@ -293,12 +293,12 @@ function updateIO(input: HTMLTextAreaElement, output: HTMLElement, options: Upda
 		}
 	}
 
-	if (typeof options.tabSize !== "undefined") {
+	if (options.tabSize !== void 0) {
 		input.style.setProperty("--tab-size", options.tabSize.toString());
 		output.style.setProperty("--tab-size", options.tabSize.toString());
 	}
 
-	if (typeof options.readOnly !== "undefined") {
+	if (options.readOnly !== void 0) {
 		input.readOnly = options.readOnly;
 	}
 }
@@ -313,7 +313,7 @@ function render(output: HTMLElement, highlighter: Highlighter, value: string, la
 
 function shouldRerender(config: FullOptions, newOptions: UpdateOptions) {
 	return (
-		(typeof newOptions.theme !== "undefined" && newOptions.theme !== config.theme) ||
-		(typeof newOptions.language !== "undefined" && newOptions.language !== config.language)
+		(newOptions.theme !== void 0 && newOptions.theme !== config.theme) ||
+		(newOptions.language !== void 0 && newOptions.language !== config.language)
 	);
 }
