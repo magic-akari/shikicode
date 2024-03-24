@@ -56,13 +56,32 @@ const defaultOptions: FullOptions = {
 	insertSpaces: true,
 };
 
-export interface ICodeEditor extends Record<string, any> {
+export interface ICodeEditor {
+	/**
+	 * The current value of the editor.
+	 * update this to change the editor content and trigger a re-render.
+	 */
 	value: string;
+
+	/**
+	 * Update the editor options.
+	 */
 	updateOptions(options: UpdateOptions): void;
+
 	/**
 	 * Dispose the editor.
 	 */
 	dispose(): void;
+
+	/**
+	 * The inner textarea element.
+	 */
+	textarea: HTMLTextAreaElement;
+
+	/**
+	 * @internal
+	 */
+	" updateHighlighter"(h: Highlighter): void;
 }
 
 export function createWithHighlighter(
@@ -112,6 +131,7 @@ export function createWithHighlighter(
 	];
 
 	return {
+		textarea: input,
 		get value() {
 			return input.value;
 		},
@@ -140,7 +160,7 @@ export function createWithHighlighter(
 
 			Object.assign(config, newOptions);
 		},
-		updateHighlighter(h: Highlighter) {
+		" updateHighlighter"(h: Highlighter) {
 			highlighter = h;
 		},
 		dispose() {
@@ -182,7 +202,7 @@ export async function createWithShiki(
 		}
 		if (should_update) {
 			const h = await shiki.getHighlighter(shiki_config);
-			editor.updateHighlighter(h);
+			editor[" updateHighlighter"](h);
 		}
 
 		updateOptions(newOptions);
