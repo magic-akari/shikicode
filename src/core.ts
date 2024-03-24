@@ -64,6 +64,11 @@ export interface ICodeEditor {
 	value: string;
 
 	/**
+	 * trigger a re-render of the editor.
+	 */
+	forceRender(): void;
+
+	/**
 	 * Update the editor options.
 	 */
 	updateOptions(options: UpdateOptions): void;
@@ -130,6 +135,10 @@ export function createWithHighlighter(
 		},
 	];
 
+	const forceRender = (value = input.value) => {
+		render(output, highlighter, value, config.language, config.theme);
+	};
+
 	return {
 		textarea: input,
 		get value() {
@@ -137,8 +146,9 @@ export function createWithHighlighter(
 		},
 		set value(code) {
 			input.value = code;
-			render(output, highlighter, code, config.language, config.theme);
+			forceRender(code);
 		},
+		forceRender,
 		updateOptions(newOptions) {
 			if (shouldUpdateIO(config, newOptions)) {
 				updateIO(input, output, newOptions);
