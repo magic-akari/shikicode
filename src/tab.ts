@@ -9,13 +9,12 @@ function indent(input: HTMLTextAreaElement, config: IndentConfig) {
 	const start = input.selectionStart;
 	const end = input.selectionEnd;
 	const value = input.value;
-	const value_length = value.length;
 
 	const line_start = getLineStart(value, start);
 	const line_end = getLineEnd(value, end);
 
 	const start_at_line_start = start === 0 || value[start - 1] === "\n";
-	const end_at_line_end = end === value_length || value[end] === "\n" || value[end] === "\r";
+	const end_at_line_end = end === value.length || value[end] === "\n" || value[end] === "\r";
 	const select_both_ends = start !== end && start_at_line_start && end_at_line_end;
 
 	const block = value.slice(line_start, line_end);
@@ -32,7 +31,23 @@ function indent(input: HTMLTextAreaElement, config: IndentConfig) {
 			}
 			return "\t".repeat(tab_width / tabSize);
 		});
+
+		const dir = input.selectionDirection;
 		input.setRangeText(replacement, line_start, line_end);
+
+		const [tab_width, leading_end] = countLeadingSpaces(value.slice(line_start, start), tabSize);
+		let [new_start, new_end] = [start, line_start + replacement.length];
+
+		if (!start_at_line_start) {
+			const new_leading_end = tab_width + (tabSize - (tab_width % tabSize));
+			new_start += new_leading_end - leading_end;
+		}
+
+		if (!end_at_line_end) {
+			new_end -= line_end - end;
+		}
+
+		input.setSelectionRange(new_start, new_end, dir);
 		input.dispatchEvent(new Event("input"));
 		return;
 	}
@@ -86,7 +101,25 @@ function outdent(input: HTMLTextAreaElement, config: IndentConfig) {
 		return "\t".repeat(tab_width / tabSize);
 	});
 	if (replacement === value_slice) return;
+
+	const dir = input.selectionDirection;
 	input.setRangeText(replacement, line_start, line_end);
+
+	let [tab_width, leading_end] = countLeadingSpaces(value.slice(line_start, start), tabSize);
+	let [new_start, new_end] = [start, line_start + replacement.length];
+	const start_at_line_start = start === 0 || value[start - 1] === "\n";
+	const end_at_line_end = end === value.length || value[end] === "\n" || value[end] === "\r";
+	if (!start_at_line_start) {
+		tab_width -= 1;
+		tab_width -= tab_width % tabSize;
+		new_start = start + (tab_width - leading_end);
+	}
+
+	if (!end_at_line_end) {
+		new_end = end - (line_end - new_end);
+	}
+
+	input.setSelectionRange(new_start, new_end, dir);
 	input.dispatchEvent(new Event("input"));
 }
 
