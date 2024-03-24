@@ -15,8 +15,11 @@ const style = `.shiki-editor.input, .shiki-editor.output {
 	color: transparent;
 	caret-color: var(--fg, black);
 	white-space: pre;
+	box-sizing: border-box;
 	background-color: transparent;
 	outline: none;
+	width: 100%;
+	height: 100%;
 	padding-left: 2em;
 	overflow: auto;
 }
