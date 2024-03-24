@@ -16,7 +16,7 @@ export interface UpdateOptions {
 	 */
 	lineNumbers?: "on" | "off";
 	/**
-	 * Should the editor be read only. See also `domReadOnly`.
+	 * Should the editor be read only.
 	 * Defaults to false.
 	 */
 	readOnly?: boolean;
@@ -37,8 +37,14 @@ export interface UpdateOptions {
 export interface InitOptions extends UpdateOptions {
 	language: BundledLanguage;
 	theme: BundledTheme;
+
 	supportedLanguages?: BundledLanguage[];
 	supportedThemes?: BundledTheme[];
+
+	/**
+	 * The initial value of the editor.
+	 * Defaults to an empty string.
+	 */
 	value?: string;
 }
 
@@ -69,7 +75,7 @@ export interface ICodeEditor {
 	forceRender(): void;
 
 	/**
-	 * Update the editor options.
+	 * Update the editor options and trigger a re-render.
 	 */
 	updateOptions(options: UpdateOptions): void;
 
@@ -89,6 +95,14 @@ export interface ICodeEditor {
 	" updateHighlighter"(h: Highlighter): void;
 }
 
+/**
+ * Create a code editor with a shiki highlighter.
+ *
+ * @param {Highlighter} highlighter - The shiki highlighter to use.
+ * @param {HTMLElement} domElement - The container element for the editor.
+ * @param {InitOptions} [options] - The initial options for the editor.
+ * @returns {ICodeEditor} - The created editor.
+ */
 export function createWithHighlighter(
 	highlighter: Highlighter,
 	domElement: HTMLElement,
@@ -184,8 +198,18 @@ interface ShikiConfig {
 	themes: BundledTheme[];
 }
 
+export type ShikiInstance = Pick<typeof Shiki, "getHighlighter">;
+
+/**
+ * Create a code editor with shiki.
+ *
+ * @param {ShikiInstance} shiki - The shiki instance to use.
+ * @param {HTMLElement} domElement - The container element for the editor.
+ * @param {InitOptions} [options] - The initial options for the editor.
+ * @returns {Promise<ICodeEditor>} - The created editor.
+ */
 export async function createWithShiki(
-	shiki: { getHighlighter: typeof Shiki.getHighlighter },
+	shiki: ShikiInstance,
 	domElement: HTMLElement,
 	options?: InitOptions,
 ): Promise<ICodeEditor> {
