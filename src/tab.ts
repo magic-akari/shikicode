@@ -1,97 +1,185 @@
-interface IndentConfig {
+import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
+
+export interface IndentConfig {
 	tabSize: number;
 	insertSpaces: boolean;
 }
 
-function indent(input: HTMLTextAreaElement, config: IndentConfig) {
+export interface State {
+	/**
+	 * The whole text content.
+	 */
+	value: string;
+	/**
+	 * The start of the selection.
+	 */
+	selectionStart: number;
+	/**
+	 * The end of the selection.
+	 */
+	selectionEnd: number;
+	/**
+	 * The direction of the selection.
+	 */
+	selectionDirection?: "forward" | "backward" | "none";
+}
+
+export interface PatchAction {
+	value: string;
+	start: number;
+	end: number;
+	mode?: SelectionMode;
+}
+
+export interface SelectAction {
+	start: number;
+	end: number;
+	direction?: "forward" | "backward" | "none";
+}
+
+export interface Action {
+	/**
+	 * The patched text content.
+	 */
+	patch?: PatchAction;
+	/**
+	 * The new selection.
+	 */
+	select?: SelectAction;
+}
+
+export function indentText(input: State, config: IndentConfig): Action {
+	if (
+		input.selectionStart !== input.selectionEnd &&
+		(bothEndsSelected(input.value, input.selectionStart, input.selectionEnd) ||
+			input.value.slice(input.selectionStart, input.selectionEnd).includes("\n"))
+	) {
+		return blockIndentText(input, config);
+	}
+
+	return simpleIndentText(input, config);
+}
+
+function simpleIndentText(input: State, config: IndentConfig): Action {
+	const { value, selectionStart, selectionEnd } = input;
 	const { tabSize, insertSpaces } = config;
 
-	const start = input.selectionStart;
-	const end = input.selectionEnd;
-	const value = input.value;
+	if (!insertSpaces) {
+		return {
+			patch: {
+				value: "\t",
+				start: selectionStart,
+				end: selectionEnd,
+				mode: "end",
+			},
+		};
+	}
 
-	const line_start = getLineStart(value, start);
-	const line_end = getLineEnd(value, end);
+	const [width_from_left] = visibleWidthFromLeft(value, selectionStart, tabSize);
+	const indent = " ".repeat(ceilTab(width_from_left + 1, tabSize) - width_from_left);
+	return {
+		patch: {
+			value: indent,
+			start: selectionStart,
+			end: selectionEnd,
+			mode: "end",
+		},
+	};
+}
 
-	const start_at_line_start = start === 0 || value[start - 1] === "\n";
-	const end_at_line_end = end === value.length || value[end] === "\n" || value[end] === "\r";
-	const select_both_ends = start !== end && start_at_line_start && end_at_line_end;
+function blockIndentText(input: State, config: IndentConfig): Action {
+	const { tabSize, insertSpaces } = config;
+	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
-	const block = value.slice(line_start, line_end);
+	const block_start = getLineStart(value, selectionStart);
+	const block_end = getLineEnd(value, selectionEnd);
 
-	if (select_both_ends || isMultiLine(value, start, end)) {
-		const replacement = block.replaceAll(/^[ \t]*/gm, (leading, offset, str) => {
-			if (str[offset] === "\n" || str[offset] === "\r" || offset === line_end) return leading;
+	const block = value.slice(block_start, block_end);
 
-			let [tab_width] = countLeadingSpaces(leading, tabSize);
-			tab_width += tabSize - (tab_width % tabSize);
+	const replacement = block.replaceAll(/^[ \t]*/gm, (leading, offset, str) => {
+		if (str[offset] === "\n" || str[offset] === "\r" || offset === block_end) return leading;
 
-			if (insertSpaces) {
-				return " ".repeat(tab_width);
+		let [tab_width] = visibleWidthFromLeft(leading, leading.length, tabSize, 0);
+		tab_width = ceilTab(tab_width + 1, tabSize);
+
+		if (insertSpaces) {
+			return " ".repeat(tab_width);
+		}
+		return "\t".repeat(tab_width / tabSize);
+	});
+
+	const patch = {
+		value: replacement,
+		start: block_start,
+		end: block_end,
+		mode: "end",
+	} satisfies PatchAction;
+
+	// restore selection
+	// By default, the selection is anchored at both ends.
+	const select = {
+		start: selectionStart,
+		end: selectionEnd + replacement.length - block.length,
+		direction: selectionDirection,
+	} satisfies SelectAction;
+
+	if (selectionStart !== block_start) {
+		const line_start = block_start;
+		const cursor_offset = selectionStart - line_start;
+		const line = value.slice(line_start, selectionStart);
+		const [, old_leading_offset] = visibleWidthLeadingSpace(line, tabSize);
+		const [, max_leading_offset] = visibleWidthLeadingSpace(replacement, tabSize);
+
+		if (cursor_offset > old_leading_offset) {
+			// |<TAB>|<TAB>|T|ext
+			//               ^
+			select.start += max_leading_offset - old_leading_offset;
+		} else if (cursor_offset > max_leading_offset) {
+			// |     |     |Text (old)
+			//           ^
+			// |<TAB>|<TAB>|<TAB>|Text (new)
+			//                   ^
+			select.start = line_start + max_leading_offset;
+		}
+	}
+
+	if (selectionEnd < block_end) {
+		const line_start = getLineStart(value, selectionEnd);
+		const cursor_offset = selectionEnd - line_start;
+		const line = value.slice(line_start, selectionEnd);
+		const [, old_leading_offset] = visibleWidthLeadingSpace(line, tabSize);
+
+		const new_bottom_line_offset = getLineStart(replacement, replacement.length);
+		const new_bottom_line = replacement.slice(new_bottom_line_offset);
+		const [, max_leading_offset] = visibleWidthLeadingSpace(new_bottom_line, tabSize);
+
+		if (cursor_offset <= old_leading_offset) {
+			select.end = block_start + new_bottom_line_offset + cursor_offset;
+
+			if (cursor_offset > max_leading_offset) {
+				select.end += max_leading_offset - old_leading_offset;
 			}
-			return "\t".repeat(tab_width / tabSize);
-		});
-
-		const dir = input.selectionDirection;
-		input.setRangeText(replacement, line_start, line_end);
-
-		const [tab_width, leading_end] = countLeadingSpaces(value.slice(line_start, start), tabSize);
-		let [new_start, new_end] = [start, line_start + replacement.length];
-
-		if (!start_at_line_start) {
-			const new_leading_end = tab_width + (tabSize - (tab_width % tabSize));
-			new_start += new_leading_end - leading_end;
 		}
-
-		if (!end_at_line_end) {
-			new_end -= line_end - end;
-		}
-
-		input.setSelectionRange(new_start, new_end, dir);
-		input.dispatchEvent(new Event("input"));
-		return;
 	}
 
-	let replacement = "\t";
-	if (insertSpaces) {
-		let [tab_width] = countLeadingSpaces(block, tabSize);
-		const padding = tabSize - (tab_width % tabSize);
-		replacement = " ".repeat(padding);
-	}
-
-	input.setRangeText(replacement, start, end, "end");
-	input.dispatchEvent(new Event("input"));
+	return {
+		patch,
+		select,
+	} satisfies Action;
 }
 
-export function hookIndent(input: HTMLTextAreaElement, config: IndentConfig) {
-	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key !== "Tab" || e.shiftKey) return;
-		e.preventDefault();
-		indent(e.target as HTMLTextAreaElement, config);
-	};
-
-	input.addEventListener("keydown", onKeydown);
-	return () => {
-		input.removeEventListener("keydown", onKeydown);
-	};
-}
-
-function outdent(input: HTMLTextAreaElement, config: IndentConfig) {
+export function outdentText(input: State, config: IndentConfig): Action {
 	const { tabSize, insertSpaces } = config;
+	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
-	const start = input.selectionStart;
-	const end = input.selectionEnd;
-	const value = input.value;
+	const block_start = getLineStart(value, selectionStart);
+	const block_end = getLineEnd(value, selectionEnd);
 
-	const line_start = getLineStart(value, start);
-	const line_end = getLineEnd(value, end);
+	const block = value.slice(block_start, block_end);
 
-	const value_slice = value.slice(line_start, line_end);
-
-	const replacement = value_slice.replaceAll(/^[ \t]*/gm, (leading) => {
-		let [tab_width] = countLeadingSpaces(leading, tabSize);
-		tab_width -= 1;
-		tab_width -= tab_width % tabSize;
+	const replacement = block.replaceAll(/^[ \t]*/gm, (leading) => {
+		let [tab_width] = visibleWidthFromLeft(leading, leading.length, tabSize, 0);
+		tab_width = floorTab(tab_width - 1, tabSize);
 
 		if (tab_width <= 0) return "";
 
@@ -100,86 +188,122 @@ function outdent(input: HTMLTextAreaElement, config: IndentConfig) {
 		}
 		return "\t".repeat(tab_width / tabSize);
 	});
-	if (replacement === value_slice) return;
+	if (replacement === block) return {};
 
-	const dir = input.selectionDirection;
-	input.setRangeText(replacement, line_start, line_end);
+	const patch = {
+		value: replacement,
+		start: block_start,
+		end: block_end,
+		mode: "end",
+	} satisfies PatchAction;
 
-	let [tab_width, leading_end] = countLeadingSpaces(value.slice(line_start, start), tabSize);
-	let [new_start, new_end] = [start, line_start + replacement.length];
-	const start_at_line_start = start === 0 || value[start - 1] === "\n";
-	const end_at_line_end = end === value.length || value[end] === "\n" || value[end] === "\r";
-	if (!start_at_line_start) {
-		tab_width -= 1;
-		tab_width -= tab_width % tabSize;
-		new_start = start + (tab_width - leading_end);
+	// restore selection
+	// By default, the selection is anchored at both ends.
+	const select = {
+		start: selectionStart,
+		end: selectionEnd + replacement.length - block.length,
+		direction: selectionDirection,
+	} satisfies SelectAction;
+
+	if (selectionStart !== block_start) {
+		const line_start = block_start;
+		const cursor_offset = selectionStart - line_start;
+		const line = value.slice(line_start, selectionStart);
+		const [, old_leading_offset] = visibleWidthLeadingSpace(line, tabSize);
+		const [, max_leading_offset] = visibleWidthLeadingSpace(replacement, tabSize);
+
+		if (cursor_offset > old_leading_offset) {
+			// |<TAB>|<TAB>|T|ext
+			//               ^
+			select.start += max_leading_offset - old_leading_offset;
+		} else if (cursor_offset > max_leading_offset) {
+			// |     |     |Text (old)
+			//           ^
+			// |<TAB>|<TAB>|<TAB>|Text (new)
+			//                   ^
+			select.start = line_start + max_leading_offset;
+		}
 	}
 
-	if (!end_at_line_end) {
-		new_end = end - (line_end - new_end);
+	if (selectionEnd < block_end) {
+		const line_start = getLineStart(value, selectionEnd);
+		const cursor_offset = selectionEnd - line_start;
+		const line = value.slice(line_start, selectionEnd);
+		const [, old_leading_offset] = visibleWidthLeadingSpace(line, tabSize);
+
+		const new_bottom_line_offset = getLineStart(replacement, replacement.length);
+		const new_bottom_line = replacement.slice(new_bottom_line_offset);
+		const [, max_leading_offset] = visibleWidthLeadingSpace(new_bottom_line, tabSize);
+
+		if (cursor_offset <= old_leading_offset) {
+			select.end = block_start + new_bottom_line_offset + cursor_offset;
+
+			if (cursor_offset > max_leading_offset) {
+				select.end += max_leading_offset - old_leading_offset;
+			}
+		}
 	}
 
-	input.setSelectionRange(new_start, new_end, dir);
-	input.dispatchEvent(new Event("input"));
+	return {
+		patch,
+		select,
+	} satisfies Action;
 }
 
-export function hookOutdent(input: HTMLTextAreaElement, config: IndentConfig) {
+function bothEndsSelected(text: string, start: number, end: number): boolean {
+	const is_start = start === 0 || text[start - 1] === "\n";
+	const is_end = end === text.length || text[end] === "\n" || text[end] === "\r";
+	return start !== end && is_start && is_end;
+}
+
+function getLineStart(text: string, index: number): number {
+	while (index > 0 && text[index - 1] !== "\n") {
+		index--;
+	}
+	return index;
+}
+
+/**
+ * Get the end index of the line.
+ * - all suffix "\n" and "\r" are ignored.
+ * - text[end] === "\n" || text[end] === "\r" || end === text.length
+ * - text.slice(start, end) should not include "\n" at the end.
+ */
+function getLineEnd(text: string, index: number): number {
+	if (text[index - 1] === "\n") {
+		index--;
+	}
+
+	while (index > 0 && (index === text.length || text[index] === "\n" || text[index] === "\r")) {
+		index--;
+	}
+
+	while (index < text.length && text[index] !== "\n" && text[index] !== "\r") {
+		index++;
+	}
+
+	return index;
+}
+
+export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key !== "Tab" || !e.shiftKey) return;
+		if (e.key !== "Tab") return;
 		e.preventDefault();
-		outdent(e.target as HTMLTextAreaElement, config);
+		const action = e.shiftKey ? outdentText : indentText;
+		const { patch, select } = action(e.target as HTMLTextAreaElement, config);
+		if (patch) {
+			input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
+			input.dispatchEvent(new Event("input"));
+			input.dispatchEvent(new Event("change"));
+		}
+		if (select) {
+			input.setSelectionRange(select.start, select.end, select.direction);
+			input.dispatchEvent(new Event("selectionchange"));
+		}
 	};
 
 	input.addEventListener("keydown", onKeydown);
 	return () => {
 		input.removeEventListener("keydown", onKeydown);
 	};
-}
-
-function getLineStart(value: string, index: number) {
-	while (index > 0 && value[index - 1] !== "\n") {
-		index--;
-	}
-	return index;
-}
-
-function getLineEnd(value: string, index: number) {
-	if (index > 0 && value[index - 1] === "\n") {
-		return index - 1;
-	}
-
-	while (index < value.length && value[index] !== "\n" && value[index] !== "\r") {
-		index++;
-	}
-	return index;
-}
-
-function isMultiLine(value: string, start: number, end: number) {
-	return value.slice(start, end).includes("\n");
-}
-
-function countLeadingSpaces(value: string, tabSize: number): [width: number, end: number] {
-	let width = 0;
-	let end = 0;
-
-	while (end < value.length) {
-		switch (value[end]) {
-			case "\t": {
-				width += tabSize - (width % tabSize);
-				end++;
-				break;
-			}
-			case " ": {
-				width++;
-				end++;
-				break;
-			}
-
-			default: {
-				return [width, end];
-			}
-		}
-	}
-
-	return [width, end];
 }

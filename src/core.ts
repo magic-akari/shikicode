@@ -4,7 +4,7 @@ import type { BundledLanguage, BundledTheme, Highlighter } from "shiki";
 import { hookBracket } from "./bracket.js";
 import { hookScroll } from "./scroll.js";
 import { injectStyle } from "./style.js";
-import { hookIndent, hookOutdent } from "./tab.js";
+import { hookTab } from "./tab.js";
 
 export interface UpdateOptions {
 	language?: BundledLanguage;
@@ -138,8 +138,7 @@ export function createWithHighlighter(
 		() => {
 			input.removeEventListener("input", onInput);
 		},
-		hookIndent(input, config),
-		hookOutdent(input, config),
+		hookTab(input, config),
 		hookBracket(input),
 		hookScroll(input, output),
 		injectStyle(doc),

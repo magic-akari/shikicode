@@ -17,6 +17,7 @@
 	"bugs": "https://github.com/magic-akari/shiki-editor/issues",
 	"homepage": "https://github.com/magic-akari/shiki-editor#readme",
 	"devDependencies": {
+		"@types/jest": "^29.5.12",
 		"dprint": "^0.45.0",
 		"oxlint": "^0.2.14",
 		"shiki": "^1.2.0",
