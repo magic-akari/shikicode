@@ -287,18 +287,34 @@ function getLineEnd(text: string, index: number): number {
 
 export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key !== "Tab") return;
-		e.preventDefault();
-		const action = e.shiftKey ? outdentText : indentText;
-		const { patch, select } = action(e.target as HTMLTextAreaElement, config);
-		if (patch) {
-			input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
-			input.dispatchEvent(new Event("input"));
-			input.dispatchEvent(new Event("change"));
-		}
-		if (select) {
-			input.setSelectionRange(select.start, select.end, select.direction);
-			input.dispatchEvent(new Event("selectionchange"));
+		console.log(e.key);
+		switch (e.key) {
+			case "Tab": {
+				e.preventDefault();
+				const action = e.shiftKey ? outdentText : indentText;
+				const { patch, select } = action(e.target as HTMLTextAreaElement, config);
+				if (patch) {
+					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
+					input.dispatchEvent(new Event("input"));
+					input.dispatchEvent(new Event("change"));
+				}
+				if (select) {
+					input.setSelectionRange(select.start, select.end, select.direction);
+					input.dispatchEvent(new Event("selectionchange"));
+				}
+				break;
+			}
+
+			case "Enter": {
+				break;
+			}
+
+			case "Backspace": {
+				break;
+			}
+
+			default:
+				return;
 		}
 	};
 
