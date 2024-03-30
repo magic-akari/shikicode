@@ -250,6 +250,65 @@ export function outdentText(input: State, config: IndentConfig): Action {
 	} satisfies Action;
 }
 
+function enter(input: State, config: IndentConfig): Action {
+	if (input.selectionStart !== input.selectionEnd) {
+		return {};
+	}
+	const { value, selectionStart } = input;
+	const line_start = getLineStart(value, selectionStart);
+	if (line_start === selectionStart) {
+		return {};
+	}
+
+	const line = value.slice(line_start, selectionStart);
+	let [leading_space] = visibleWidthLeadingSpace(line, config.tabSize);
+	leading_space = floorTab(leading_space, config.tabSize);
+	let indet_space = leading_space;
+
+	switch (value[selectionStart - 1]) {
+		case "(":
+		case "[":
+		case "{": {
+			indet_space += config.tabSize;
+		}
+	}
+
+	let replacement = "\n" + " ".repeat(indet_space);
+	if (config.insertSpaces) {
+		replacement = "\n" + "\t".repeat(indet_space / config.tabSize);
+	}
+
+	let select: SelectAction | undefined;
+
+	switch (value.slice(selectionStart - 1, selectionStart + 1)) {
+		case "{}":
+		case "[]":
+		case "()": {
+			select = {
+				start: selectionStart + replacement.length,
+				end: selectionStart + replacement.length,
+				direction: "none",
+			};
+
+			if (config.insertSpaces) {
+				replacement += "\n" + " ".repeat(leading_space);
+			} else {
+				replacement += "\n" + "\t".repeat(leading_space / config.tabSize);
+			}
+		}
+	}
+
+	return {
+		patch: {
+			value: replacement,
+			start: selectionStart,
+			end: selectionStart,
+			mode: "end",
+		},
+		select,
+	};
+}
+
 function bothEndsSelected(text: string, start: number, end: number): boolean {
 	const is_start = start === 0 || text[start - 1] === "\n";
 	const is_end = end === text.length || text[end] === "\n" || text[end] === "\r";
@@ -290,9 +349,11 @@ export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 		console.log(e.key);
 		switch (e.key) {
 			case "Tab": {
-				e.preventDefault();
 				const action = e.shiftKey ? outdentText : indentText;
 				const { patch, select } = action(e.target as HTMLTextAreaElement, config);
+				if (patch || select) {
+					e.preventDefault();
+				}
 				if (patch) {
 					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
 					input.dispatchEvent(new Event("input"));
@@ -306,6 +367,19 @@ export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 			}
 
 			case "Enter": {
+				const { patch, select } = enter(e.target as HTMLTextAreaElement, config);
+				if (patch || select) {
+					e.preventDefault();
+				}
+				if (patch) {
+					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
+					input.dispatchEvent(new Event("input"));
+					input.dispatchEvent(new Event("change"));
+				}
+				if (select) {
+					input.setSelectionRange(select.start, select.end, select.direction);
+					input.dispatchEvent(new Event("selectionchange"));
+				}
 				break;
 			}
 
