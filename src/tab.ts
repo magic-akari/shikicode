@@ -313,6 +313,48 @@ function enter(input: State, config: IndentConfig): Action {
 	};
 }
 
+function backspace(input: State, config: IndentConfig): Action {
+	const { value, selectionStart, selectionEnd } = input;
+	if (selectionStart !== selectionEnd) {
+		return empty_action;
+	}
+
+	if (value[selectionStart - 1] !== " ") {
+		return empty_action;
+	}
+
+	const line_start = getLineStart(value, selectionStart);
+	let width = 0;
+	let last_tab_stop = line_start;
+	for (let i = line_start; i < selectionStart - 1; i++) {
+		switch (value[i]) {
+			case " ": {
+				width++;
+				if (width % config.tabSize === 0) {
+					last_tab_stop = i;
+				}
+				break;
+			}
+			case "\t": {
+				last_tab_stop = i;
+				width = ceilTab(width + 1, config.tabSize);
+				break;
+			}
+			default: {
+				return empty_action;
+			}
+		}
+	}
+
+	return {
+		select: {
+			start: last_tab_stop,
+			end: selectionStart,
+			direction: "none",
+		},
+	};
+}
+
 function bothEndsSelected(text: string, start: number, end: number): boolean {
 	const is_start = start === 0 || text[start - 1] === "\n";
 	const is_end = end === text.length || text[end] === "\n" || text[end] === "\r";
@@ -388,6 +430,12 @@ export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 			}
 
 			case "Backspace": {
+				const { select } = backspace(e.target as HTMLTextAreaElement, config);
+				if (select) {
+					input.setSelectionRange(select.start, select.end, select.direction);
+					input.dispatchEvent(new Event("selectionchange"));
+				}
+
 				break;
 			}
 
