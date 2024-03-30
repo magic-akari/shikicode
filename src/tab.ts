@@ -392,7 +392,6 @@ function getLineEnd(text: string, index: number): number {
 
 export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
 	const onKeydown = (e: KeyboardEvent) => {
-		console.log(e.key);
 		switch (e.key) {
 			case "Tab": {
 				const action = e.shiftKey ? outdentText : indentText;
