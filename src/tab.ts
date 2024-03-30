@@ -48,6 +48,8 @@ export interface Action {
 	select?: SelectAction;
 }
 
+const empty_action: Action = {};
+
 export function indentText(input: State, config: IndentConfig): Action {
 	if (
 		input.selectionStart !== input.selectionEnd &&
@@ -188,7 +190,7 @@ export function outdentText(input: State, config: IndentConfig): Action {
 		}
 		return "\t".repeat(tab_width / tabSize);
 	});
-	if (replacement === block) return {};
+	if (replacement === block) return empty_action;
 
 	const patch = {
 		value: replacement,
@@ -252,12 +254,12 @@ export function outdentText(input: State, config: IndentConfig): Action {
 
 function enter(input: State, config: IndentConfig): Action {
 	if (input.selectionStart !== input.selectionEnd) {
-		return {};
+		return empty_action;
 	}
 	const { value, selectionStart } = input;
 	const line_start = getLineStart(value, selectionStart);
 	if (line_start === selectionStart) {
-		return {};
+		return empty_action;
 	}
 
 	const line = value.slice(line_start, selectionStart);
