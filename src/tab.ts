@@ -273,9 +273,11 @@ function enter(input: State, config: IndentConfig): Action {
 		}
 	}
 
-	let replacement = "\n" + " ".repeat(indet_space);
+	let replacement = "\n";
 	if (config.insertSpaces) {
-		replacement = "\n" + "\t".repeat(indet_space / config.tabSize);
+		replacement += " ".repeat(indet_space);
+	} else {
+		replacement += "\t".repeat(indet_space / config.tabSize);
 	}
 
 	let select: SelectAction | undefined;
