@@ -265,21 +265,21 @@ function enter(input: State, config: IndentConfig): Action {
 	const line = value.slice(line_start, selectionStart);
 	let [leading_space] = visibleWidthLeadingSpace(line, config.tabSize);
 	leading_space = floorTab(leading_space, config.tabSize);
-	let indet_space = leading_space;
+	let indent_space = leading_space;
 
 	switch (value[selectionStart - 1]) {
 		case "(":
 		case "[":
 		case "{": {
-			indet_space += config.tabSize;
+			indent_space += config.tabSize;
 		}
 	}
 
 	let replacement = "\n";
 	if (config.insertSpaces) {
-		replacement += " ".repeat(indet_space);
+		replacement += " ".repeat(indent_space);
 	} else {
-		replacement += "\t".repeat(indet_space / config.tabSize);
+		replacement += "\t".repeat(indent_space / config.tabSize);
 	}
 
 	let select: SelectAction | undefined;
