@@ -172,17 +172,13 @@ function create(
 				updateContainer(domElement, highlighter, newOptions.theme!);
 			}
 
-			if (shouldRerender(editor_options, newOptions, input)) {
-				render(
-					output,
-					highlighter,
-					newOptions.value == void 0 ? input.value : newOptions.value,
-					newOptions.language || editor_options.language,
-					newOptions.theme || editor_options.theme,
-				);
-			}
+			const should_rerender = shouldRerender(editor_options, newOptions, input.value);
 
 			Object.assign(editor_options, newOptions);
+
+			if (should_rerender) {
+				forceRender(newOptions.value === void 0 ? input.value : newOptions.value);
+			}
 		},
 
 		addPlugin(plugin) {
@@ -268,10 +264,10 @@ function render(output: HTMLElement, highlighter: Highlighter, value: string, la
 	});
 }
 
-function shouldRerender(config: FullOptions, newOptions: UpdateOptions, input: HTMLTextAreaElement) {
+function shouldRerender(config: FullOptions, newOptions: UpdateOptions, value: string) {
 	return (
 		(newOptions.theme !== void 0 && newOptions.theme !== config.theme) ||
 		(newOptions.language !== void 0 && newOptions.language !== config.language) ||
-		(newOptions.value !== void 0 && newOptions.value !== input.value)
+		(newOptions.value !== void 0 && newOptions.value !== value)
 	);
 }
