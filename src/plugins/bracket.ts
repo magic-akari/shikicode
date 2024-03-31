@@ -20,6 +20,10 @@ const r2l: Record<string, string | undefined> = {
 	'"': '"',
 };
 
+/**
+ * A plugin that automatically inserts closing brackets.
+ * TODO: Add support for languages that use different brackets.
+ */
 export function hookBracket({ input }: ShikiEditor): IDisposeable {
 	let key = "";
 	let [start, end] = [0, 0];

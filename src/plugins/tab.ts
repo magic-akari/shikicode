@@ -391,6 +391,9 @@ function getLineEnd(text: string, index: number): number {
 	return index;
 }
 
+/**
+ * A plugin that automatically inserts or removes indentation.
+ */
 export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposeable {
 	const onKeydown = (e: KeyboardEvent) => {
 		switch (e.key) {
