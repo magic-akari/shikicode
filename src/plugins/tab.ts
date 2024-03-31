@@ -1,4 +1,5 @@
-import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
+import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "../common.js";
+import type { IDisposeable, ShikiEditor } from "./index.js";
 
 export interface IndentConfig {
 	tabSize: number;
@@ -390,7 +391,7 @@ function getLineEnd(text: string, index: number): number {
 	return index;
 }
 
-export function hookTab(input: HTMLTextAreaElement, config: IndentConfig) {
+export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposeable {
 	const onKeydown = (e: KeyboardEvent) => {
 		switch (e.key) {
 			case "Tab": {

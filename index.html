@@ -55,18 +55,41 @@
 					<select id="theme_list"></select>
 				</header>
 			</div>
+			<textarea
+				hidden
+				id="example"
+			>
+import * as shiki from "shiki";
+import { shikiEditor } from "shiki-editor";
+import { hookBracket, hookTab } from "shiki-editor/plugins";
+
+const theme = "github-dark";
+const language = "tsx";
+
+const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
+
+const editor = shikiEditor()
+	.withPlugins(hookBracket, hookTab)
+	.create(container, h, {
+		value: `console.log("Hello, shiki-editor 👋!");`,
+		language,
+		theme,
+	});
+</textarea
+			>
 		</main>
 		<script type="importmap">
 		{
 			"imports": {
-				"shiki": "https://esm.run/shiki"
+				"shiki": "https://esm.run/shiki@1.2.0"
 			}
 		}
 		</script>
 		<script type="module">
-		import { create } from "./lib/index.js";
-
+		import * as shiki from "shiki";
 		import { bundledLanguagesInfo, bundledThemesInfo } from "shiki";
+		import { shikiEditor } from "./lib/index.js";
+		import { autoload, hookBracket, hookTab } from "./lib/plugins/index.js";
 
 		bundledLanguagesInfo.forEach((lang) => {
 			const option = document.createElement("option");
@@ -88,24 +111,26 @@
 		lang_list.value = language;
 		theme_list.value = theme;
 
-		create(container, {
-			value: `console.log("Hello, shiki-editor 👋!")`,
+		const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
+
+		const editor = shikiEditor().withPlugins(hookBracket, hookTab, autoload).create(container, h, {
+			value: example.value,
 			language,
 			theme,
-		}).then((editor) => {
-			window.editor = editor;
+		});
 
-			lang_list.addEventListener("change", (e) => {
-				editor.updateOptions({
-					language: e.target.value,
-				});
-			});
-			theme_list.addEventListener("change", (e) => {
-				editor.updateOptions({
-					theme: e.target.value,
-				});
+		lang_list.addEventListener("change", (e) => {
+			editor.updateOptions({
+				language: e.target.value,
 			});
 		});
+		theme_list.addEventListener("change", (e) => {
+			editor.updateOptions({
+				theme: e.target.value,
+			});
+		});
+
+		window.editor = editor;
 		</script>
 	</body>
 </html>

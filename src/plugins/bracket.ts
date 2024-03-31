@@ -1,3 +1,5 @@
+import type { IDisposeable, ShikiEditor } from "./index.js";
+
 const l2r: Record<string, string | undefined> = {
 	// @ts-ignore
 	__proto__: null,
@@ -18,7 +20,7 @@ const r2l: Record<string, string | undefined> = {
 	'"': '"',
 };
 
-export function hookBracket(input: HTMLTextAreaElement) {
+export function hookBracket({ input }: ShikiEditor): IDisposeable {
 	let key = "";
 	let [start, end] = [0, 0];
 

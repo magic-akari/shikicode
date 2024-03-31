@@ -1,115 +1,113 @@
-import type * as Shiki from "shiki";
 import type { BundledLanguage, BundledTheme, Highlighter } from "shiki";
+import type { Plugin } from "./plugins/index.js";
 
-import { hookBracket } from "./bracket.js";
 import { hookScroll } from "./scroll.js";
 import { injectStyle } from "./style.js";
-import { hookTab } from "./tab.js";
 
-export interface UpdateOptions {
-	language?: BundledLanguage;
-	theme?: BundledTheme;
-
+export interface ShikiOptions {
 	/**
 	 * Control the rendering of line numbers.
 	 * Defaults to `on`.
 	 */
-	lineNumbers?: "on" | "off";
+	readonly lineNumbers?: "on" | "off";
 	/**
 	 * Should the editor be read only.
 	 * Defaults to false.
 	 */
-	readOnly?: boolean;
+	readonly readOnly?: boolean;
 	/**
 	 * The number of spaces a tab is equal to.
 	 * This setting is overridden based on the file contents when `detectIndentation` is on.
 	 * Defaults to 4.
 	 */
-	tabSize?: number;
+	readonly tabSize?: number;
 	/**
 	 * Insert spaces when pressing `Tab`.
 	 * This setting is overridden based on the file contents when `detectIndentation` is on.
 	 * Defaults to true.
 	 */
-	insertSpaces?: boolean;
+	readonly insertSpaces?: boolean;
 }
 
-export interface InitOptions extends UpdateOptions {
-	language: BundledLanguage;
-	theme: BundledTheme;
+export interface InitOptions {
+	readonly value?: string;
+	readonly language: "text" | BundledLanguage;
+	readonly theme: "none" | BundledTheme;
+}
 
-	supportedLanguages?: BundledLanguage[];
-	supportedThemes?: BundledTheme[];
+export interface UpdateOptions extends ShikiOptions {
+	readonly value?: string;
+	readonly language?: "text" | BundledLanguage;
+	readonly theme?: "none" | BundledTheme;
+}
+
+interface ShikiEditorFactory {
+	create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor;
+	withOptions(options: Readonly<UpdateOptions>): ShikiEditorFactory;
+	withPlugins(...plugins: Plugin[]): ShikiEditorFactory;
+}
+
+export interface ShikiEditor {
+	readonly input: HTMLTextAreaElement;
+	readonly output: HTMLDivElement;
+	readonly container: HTMLElement;
 
 	/**
-	 * The initial value of the editor.
-	 * Defaults to an empty string.
+	 * The highlighter instance used by the editor.
 	 */
-	value?: string;
-}
+	readonly highlighter: Highlighter;
 
-export type FullOptions = Required<InitOptions>;
-
-const defaultOptions: FullOptions = {
-	// @ts-ignore
-	__proto__: null,
-	value: "",
-	language: "c",
-	lineNumbers: "on",
-	readOnly: false,
-	theme: "github-light",
-	tabSize: 4,
-	insertSpaces: true,
-};
-
-export interface ICodeEditor {
 	/**
 	 * The current value of the editor.
-	 * update this to change the editor content and trigger a re-render.
+	 * Setting this value will update the editor and force a re-render.
 	 */
 	value: string;
+	forceRender(value?: string): void;
 
 	/**
-	 * trigger a re-render of the editor.
-	 */
-	forceRender(): void;
-
-	/**
-	 * Update the editor options and trigger a re-render.
+	 * Make sure the theme or language is loaded before calling this method.
 	 */
 	updateOptions(options: UpdateOptions): void;
 
-	/**
-	 * Dispose the editor.
-	 */
+	addPlugin(plugin: Plugin): void;
+
 	dispose(): void;
-
-	/**
-	 * The inner textarea element.
-	 */
-	textarea: HTMLTextAreaElement;
-
-	/**
-	 * @internal
-	 */
-	" updateHighlighter"(h: Highlighter): void;
 }
 
-/**
- * Create a code editor with a shiki highlighter.
- *
- * @param {Highlighter} highlighter - The shiki highlighter to use.
- * @param {HTMLElement} domElement - The container element for the editor.
- * @param {InitOptions} [options] - The initial options for the editor.
- * @returns {ICodeEditor} - The created editor.
- */
-export function createWithHighlighter(
-	highlighter: Highlighter,
-	domElement: HTMLElement,
-	options?: InitOptions,
-): ICodeEditor {
-	const config: FullOptions = { ...defaultOptions, ...options };
+type FullOptions = Required<UpdateOptions>;
 
+const defaultOptions = {
+	lineNumbers: "on",
+	readOnly: false,
+	tabSize: 4,
+	insertSpaces: true,
+} as const;
+
+export function shikiEditor(): ShikiEditorFactory {
+	const editor_options = { ...defaultOptions };
+	const plugin_list: Plugin[] = [];
+
+	return {
+		create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor {
+			return create(domElement, highlighter, { value: "", ...editor_options, ...options }, plugin_list);
+		},
+		withOptions(options: UpdateOptions): ShikiEditorFactory {
+			Object.assign(editor_options, options);
+			return this;
+		},
+		withPlugins(...plugins: Plugin[]): ShikiEditorFactory {
+			plugin_list.push(...plugins);
+			return this;
+		},
+	};
+}
+
+function create(
+	domElement: HTMLElement,
+	highlighter: Highlighter,
+	editor_options: FullOptions,
+	plugin_list: Plugin[],
+): ShikiEditor {
 	const doc = domElement.ownerDocument;
 
 	const output = doc.createElement("div");
@@ -121,39 +119,37 @@ export function createWithHighlighter(
 	domElement.append(input);
 	domElement.append(output);
 
-	updateIO(input, output, config);
-	updateContainer(domElement, highlighter, config.theme);
+	updateIO(input, output, editor_options);
+	updateContainer(domElement, highlighter, editor_options.theme);
 
-	if (config.value) {
-		input.value = config.value;
+	if (editor_options.value) {
+		input.value = editor_options.value;
 	}
 
+	const forceRender = (value = input.value) => {
+		render(output, highlighter, value, editor_options.language, editor_options.theme);
+	};
+
 	const onInput = () => {
-		render(output, highlighter, input.value, config.language, config.theme);
+		forceRender();
 	};
 	input.addEventListener("input", onInput);
-	onInput();
+
+	forceRender();
 
 	const cleanup = [
 		() => {
 			input.removeEventListener("input", onInput);
 		},
-		hookTab(input, config),
-		hookBracket(input),
 		hookScroll(input, output),
 		injectStyle(doc),
-		() => {
-			input.remove();
-			output.remove();
-		},
 	];
 
-	const forceRender = (value = input.value) => {
-		render(output, highlighter, value, config.language, config.theme);
-	};
+	const editor: ShikiEditor = {
+		input,
+		output,
+		container: domElement,
 
-	return {
-		textarea: input,
 		get value() {
 			return input.value;
 		},
@@ -161,85 +157,47 @@ export function createWithHighlighter(
 			input.value = code;
 			forceRender(code);
 		},
+
+		get highlighter() {
+			return highlighter;
+		},
+
 		forceRender,
 		updateOptions(newOptions) {
-			if (shouldUpdateIO(config, newOptions)) {
+			if (shouldUpdateIO(editor_options, newOptions)) {
 				updateIO(input, output, newOptions);
 			}
 
-			if (shouldUpdateContainer(config, newOptions)) {
+			if (shouldUpdateContainer(editor_options, newOptions)) {
 				updateContainer(domElement, highlighter, newOptions.theme!);
 			}
 
-			if (shouldRerender(config, newOptions)) {
+			if (shouldRerender(editor_options, newOptions, input)) {
 				render(
 					output,
 					highlighter,
-					input.value,
-					newOptions.language || config.language,
-					newOptions.theme || config.theme,
+					newOptions.value == void 0 ? input.value : newOptions.value,
+					newOptions.language || editor_options.language,
+					newOptions.theme || editor_options.theme,
 				);
 			}
 
-			Object.assign(config, newOptions);
+			Object.assign(editor_options, newOptions);
 		},
-		" updateHighlighter"(h: Highlighter) {
-			highlighter = h;
+
+		addPlugin(plugin) {
+			cleanup.push(plugin(this, editor_options));
 		},
 		dispose() {
 			cleanup.forEach((fn) => fn());
+			input.remove();
+			output.remove();
 		},
 	};
-}
 
-interface ShikiConfig {
-	langs: BundledLanguage[];
-	themes: BundledTheme[];
-}
-
-export type ShikiInstance = Pick<typeof Shiki, "getHighlighter">;
-
-/**
- * Create a code editor with shiki.
- *
- * @param {ShikiInstance} shiki - The shiki instance to use.
- * @param {HTMLElement} domElement - The container element for the editor.
- * @param {InitOptions} [options] - The initial options for the editor.
- * @returns {Promise<ICodeEditor>} - The created editor.
- */
-export async function createWithShiki(
-	shiki: ShikiInstance,
-	domElement: HTMLElement,
-	options?: InitOptions,
-): Promise<ICodeEditor> {
-	const config: FullOptions = { ...defaultOptions, ...options };
-	const shiki_config: ShikiConfig = {
-		themes: config.supportedThemes || [config.theme],
-		langs: config.supportedLanguages || [config.language],
-	};
-
-	let highlighter = await shiki.getHighlighter(shiki_config);
-
-	const editor = createWithHighlighter(highlighter, domElement, config);
-	const updateOptions = editor.updateOptions;
-
-	editor.updateOptions = async (newOptions: UpdateOptions) => {
-		let should_update = false;
-		if (newOptions.theme && !shiki_config.themes.includes(newOptions.theme)) {
-			shiki_config.themes.push(newOptions.theme);
-			should_update = true;
-		}
-		if (newOptions.language && !shiki_config.langs.includes(newOptions.language)) {
-			shiki_config.langs.push(newOptions.language);
-			should_update = true;
-		}
-		if (should_update) {
-			const h = await shiki.getHighlighter(shiki_config);
-			editor[" updateHighlighter"](h);
-		}
-
-		updateOptions(newOptions);
-	};
+	for (const plugin of plugin_list) {
+		cleanup.push(plugin(editor, editor_options));
+	}
 
 	return editor;
 }
@@ -310,9 +268,10 @@ function render(output: HTMLElement, highlighter: Highlighter, value: string, la
 	});
 }
 
-function shouldRerender(config: FullOptions, newOptions: UpdateOptions) {
+function shouldRerender(config: FullOptions, newOptions: UpdateOptions, input: HTMLTextAreaElement) {
 	return (
 		(newOptions.theme !== void 0 && newOptions.theme !== config.theme) ||
-		(newOptions.language !== void 0 && newOptions.language !== config.language)
+		(newOptions.language !== void 0 && newOptions.language !== config.language) ||
+		(newOptions.value !== void 0 && newOptions.value !== input.value)
 	);
 }
