@@ -176,7 +176,7 @@ export function outdentText(input: State, config: IndentConfig): Action {
 	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
 	const block_start = getLineStart(value, selectionStart);
-	const block_end = getLineEnd(value, selectionEnd);
+	const block_end = getBlockLineEnd(value, Math.max(selectionEnd, selectionStart + 1));
 
 	const block = value.slice(block_start, block_end);
 
