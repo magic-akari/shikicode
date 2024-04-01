@@ -95,7 +95,7 @@ function blockIndentText(input: State, config: IndentConfig): Action {
 	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
 	const block_start = getLineStart(value, selectionStart);
-	const block_end = getLineEnd(value, selectionEnd);
+	const block_end = getBlockLineEnd(value, selectionEnd);
 
 	const block = value.slice(block_start, block_end);
 
@@ -375,7 +375,7 @@ function getLineStart(text: string, index: number): number {
  * - text[end] === "\n" || text[end] === "\r" || end === text.length
  * - text.slice(start, end) should not include "\n" at the end.
  */
-function getLineEnd(text: string, index: number): number {
+function getBlockLineEnd(text: string, index: number): number {
 	if (text[index - 1] === "\n") {
 		index--;
 	}
@@ -384,6 +384,10 @@ function getLineEnd(text: string, index: number): number {
 		index--;
 	}
 
+	return getLineEnd(text, index);
+}
+
+function getLineEnd(text: string, index: number): number {
 	while (index < text.length && text[index] !== "\n" && text[index] !== "\r") {
 		index++;
 	}
@@ -398,11 +402,10 @@ export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposea
 	const onKeydown = (e: KeyboardEvent) => {
 		switch (e.key) {
 			case "Tab": {
+				e.preventDefault();
+
 				const action = e.shiftKey ? outdentText : indentText;
 				const { patch, select } = action(e.target as HTMLTextAreaElement, config);
-				if (patch || select) {
-					e.preventDefault();
-				}
 				if (patch) {
 					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
 					input.dispatchEvent(new Event("input"));
@@ -439,6 +442,11 @@ export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposea
 					input.dispatchEvent(new Event("selectionchange"));
 				}
 
+				break;
+			}
+
+			case "Escape": {
+				input.blur();
 				break;
 			}
 
