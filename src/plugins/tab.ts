@@ -1,4 +1,4 @@
-import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
+import { ceilTab, floorTab, setRangeText, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
 import type { IDisposeable, ShikiEditor } from "./index.js";
 
 export interface IndentConfig {
@@ -407,7 +407,7 @@ export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposea
 				const action = e.shiftKey ? outdentText : indentText;
 				const { patch, select } = action(e.target as HTMLTextAreaElement, config);
 				if (patch) {
-					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
+					setRangeText(input, patch.value, patch.start, patch.end, patch.mode);
 					input.dispatchEvent(new Event("input"));
 					input.dispatchEvent(new Event("change"));
 				}
@@ -424,7 +424,7 @@ export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposea
 					e.preventDefault();
 				}
 				if (patch) {
-					input.setRangeText(patch.value, patch.start, patch.end, patch.mode);
+					setRangeText(input, patch.value, patch.start, patch.end, patch.mode);
 					input.dispatchEvent(new Event("input"));
 					input.dispatchEvent(new Event("change"));
 				}

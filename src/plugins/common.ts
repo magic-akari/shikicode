@@ -76,3 +76,34 @@ export function visibleWidthLeadingSpace(line: string, tabSize: number): [width:
 	}
 	return [width, i];
 }
+
+/**
+ * Instead of using the `setRangeText` method,
+ * prefer to use the `execCommand` method to preserve the undo stack.
+ */
+export function setRangeText(
+	input: HTMLTextAreaElement,
+	replacement: string,
+	start: number,
+	end: number,
+	selectionMode?: SelectionMode,
+) {
+	input.setSelectionRange(start, end);
+	input.ownerDocument.execCommand("insertText", false, replacement);
+	switch (selectionMode) {
+		case "start": {
+			input.setSelectionRange(start, start);
+			break;
+		}
+		case "end": {
+			input.setSelectionRange(start + replacement.length, start + replacement.length);
+			break;
+		}
+
+		case "select":
+		default: {
+			input.setSelectionRange(start, start + replacement.length);
+			break;
+		}
+	}
+}

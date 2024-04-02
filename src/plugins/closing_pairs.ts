@@ -1,3 +1,4 @@
+import { setRangeText } from "./common.js";
 import type { EditorPlugin } from "./index.js";
 
 export type ClosingPair = readonly [open: string, close: string];
@@ -73,9 +74,10 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 				const text = input.value.slice(selectionStart, selectionEnd);
 				const left = e.key;
 				const right = config.auto_closing_pairs_open_by_start.get(left)!;
-				input.setRangeText(left + text + right, selectionStart, selectionEnd, "select");
+				setRangeText(input, left + text + right, selectionStart, selectionEnd, "select");
 				input.dispatchEvent(new Event("input"));
 				input.dispatchEvent(new Event("change"));
+				input.setSelectionRange(selectionStart + 1, selectionEnd + 1);
 				return;
 			}
 
@@ -85,9 +87,13 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 				config.auto_closing_pairs_open_by_start.has(e.key) &&
 				should_auto_close.includes(input.value[selectionStart] || "")
 			) {
+				e.preventDefault();
 				const left = e.key;
 				const right = config.auto_closing_pairs_open_by_start.get(left)!;
-				input.setRangeText(right, selectionStart, selectionEnd, "start");
+				setRangeText(input, left + right, selectionStart, selectionEnd, "start");
+				input.dispatchEvent(new Event("input"));
+				input.dispatchEvent(new Event("change"));
+				input.setSelectionRange(selectionStart + 1, selectionEnd + 1);
 				return;
 			}
 
