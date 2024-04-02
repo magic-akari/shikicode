@@ -9,8 +9,8 @@ export type ClosingPairsRules = {
 };
 
 interface ResolvedClosingPairsRules {
-	auto_closing_pairs_open_by_start: Map<string, string>;
-	auto_closing_pairs_open_by_end: Map<string, string>;
+	auto_closing_pairs_open: Map<string, string>;
+	auto_closing_pairs_close: Map<string, string>;
 	auto_closing_pairs: Set<string>;
 }
 
@@ -25,18 +25,18 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 	const list = default_pairs.concat(pairs_rule_list);
 
 	for (const { language, pairs } of list) {
-		const auto_closing_pairs_open_by_start = new Map<string, string>();
-		const auto_closing_pairs_open_by_end = new Map<string, string>();
-		const auto_closing_paris = new Set<string>();
+		const auto_closing_pairs_open = new Map<string, string>();
+		const auto_closing_pairs_close = new Map<string, string>();
+		const auto_closing_pairs = new Set<string>();
 		pairs.forEach(([open, close]) => {
-			auto_closing_pairs_open_by_start.set(open, close);
-			auto_closing_pairs_open_by_end.set(close, open);
-			auto_closing_paris.add(open + close);
+			auto_closing_pairs_open.set(open, close);
+			auto_closing_pairs_close.set(close, open);
+			auto_closing_pairs.add(open + close);
 		});
 		rules.set(language, {
-			auto_closing_pairs_open_by_start,
-			auto_closing_pairs_open_by_end,
-			auto_closing_pairs: auto_closing_paris,
+			auto_closing_pairs_open,
+			auto_closing_pairs_close,
+			auto_closing_pairs,
 		});
 	}
 
@@ -61,19 +61,16 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 				return;
 			}
 
-			if (
-				!config.auto_closing_pairs_open_by_start.has(e.key) &&
-				!config.auto_closing_pairs_open_by_end.has(e.key)
-			) {
+			if (!config.auto_closing_pairs_open.has(e.key) && !config.auto_closing_pairs_close.has(e.key)) {
 				return;
 			}
 
 			// add pairs surrounding the selection
-			if (selectionStart !== selectionEnd && config.auto_closing_pairs_open_by_start.has(e.key)) {
+			if (selectionStart !== selectionEnd && config.auto_closing_pairs_open.has(e.key)) {
 				e.preventDefault();
 				const text = input.value.slice(selectionStart, selectionEnd);
 				const left = e.key;
-				const right = config.auto_closing_pairs_open_by_start.get(left)!;
+				const right = config.auto_closing_pairs_open.get(left)!;
 				setRangeText(input, left + text + right, selectionStart, selectionEnd, "select");
 				input.dispatchEvent(new Event("input"));
 				input.dispatchEvent(new Event("change"));
@@ -84,12 +81,12 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 			// add pairs at the cursor
 			if (
 				selectionStart === selectionEnd &&
-				config.auto_closing_pairs_open_by_start.has(e.key) &&
+				config.auto_closing_pairs_open.has(e.key) &&
 				should_auto_close.includes(input.value[selectionStart] || "")
 			) {
 				e.preventDefault();
 				const left = e.key;
-				const right = config.auto_closing_pairs_open_by_start.get(left)!;
+				const right = config.auto_closing_pairs_open.get(left)!;
 				setRangeText(input, left + right, selectionStart, selectionEnd, "start");
 				input.dispatchEvent(new Event("input"));
 				input.dispatchEvent(new Event("change"));
@@ -98,12 +95,12 @@ export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[
 			}
 
 			// skip right pairs
-			if (selectionStart === selectionEnd && config.auto_closing_pairs_open_by_end.has(e.key)) {
-				const prev = input.value[selectionStart - 1];
-				const left = config.auto_closing_pairs_open_by_end.get(e.key)!;
-				if (prev === left) {
-					input.setSelectionRange(selectionStart + 1, selectionEnd + 1);
-				}
+			if (
+				selectionStart === selectionEnd &&
+				selectionStart > 0 &&
+				config.auto_closing_pairs.has(input.value.slice(selectionStart - 1, selectionStart + 1))
+			) {
+				input.setSelectionRange(selectionStart, selectionEnd + 1);
 			}
 		};
 
