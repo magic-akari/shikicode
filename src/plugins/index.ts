@@ -9,7 +9,7 @@ export interface PluginOptions extends ShikiOptions {
 	readonly theme: "none" | BundledTheme;
 }
 
-export type Plugin = {
+export type EditorPlugin = {
 	(editor: ShikiEditor, options: PluginOptions): IDisposeable;
 };
 

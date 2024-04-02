@@ -1,5 +1,5 @@
 import type { BundledLanguage, BundledTheme, Highlighter } from "shiki";
-import type { Plugin } from "./plugins/index.js";
+import type { EditorPlugin } from "./plugins/index.js";
 
 import { hookScroll } from "./scroll.js";
 import { injectStyle } from "./style.js";
@@ -44,7 +44,7 @@ export interface UpdateOptions extends ShikiOptions {
 interface ShikiEditorFactory {
 	create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor;
 	withOptions(options: Readonly<UpdateOptions>): ShikiEditorFactory;
-	withPlugins(...plugins: Plugin[]): ShikiEditorFactory;
+	withPlugins(...plugins: EditorPlugin[]): ShikiEditorFactory;
 }
 
 export interface ShikiEditor {
@@ -69,7 +69,7 @@ export interface ShikiEditor {
 	 */
 	updateOptions(options: UpdateOptions): void;
 
-	addPlugin(plugin: Plugin): void;
+	addPlugin(plugin: EditorPlugin): void;
 
 	dispose(): void;
 }
@@ -85,7 +85,7 @@ const defaultOptions = {
 
 export function shikiEditor(): ShikiEditorFactory {
 	const editor_options = { ...defaultOptions };
-	const plugin_list: Plugin[] = [];
+	const plugin_list: EditorPlugin[] = [];
 
 	return {
 		create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor {
@@ -95,7 +95,7 @@ export function shikiEditor(): ShikiEditorFactory {
 			Object.assign(editor_options, options);
 			return this;
 		},
-		withPlugins(...plugins: Plugin[]): ShikiEditorFactory {
+		withPlugins(...plugins: EditorPlugin[]): ShikiEditorFactory {
 			plugin_list.push(...plugins);
 			return this;
 		},
@@ -106,7 +106,7 @@ function create(
 	domElement: HTMLElement,
 	highlighter: Highlighter,
 	editor_options: FullOptions,
-	plugin_list: Plugin[],
+	plugin_list: EditorPlugin[],
 ): ShikiEditor {
 	const doc = domElement.ownerDocument;
 

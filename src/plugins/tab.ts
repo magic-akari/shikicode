@@ -1,4 +1,4 @@
-import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "../common.js";
+import { ceilTab, floorTab, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
 import type { IDisposeable, ShikiEditor } from "./index.js";
 
 export interface IndentConfig {
