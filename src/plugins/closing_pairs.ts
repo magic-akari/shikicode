@@ -1,10 +1,10 @@
 import type { EditorPlugin } from "./index.js";
 
-export type ClosingPair = [open: string, close: string];
+export type ClosingPair = readonly [open: string, close: string];
 
 export type ClosingPairsRules = {
-	language: string;
-	pairs: ClosingPair[];
+	readonly language: string;
+	readonly pairs: ClosingPair[];
 };
 
 interface ResolvedClosingPairsRules {
@@ -18,19 +18,21 @@ const should_auto_close = " \t\n.,;)]}>=";
 /**
  * A plugin that automatically inserts closing pairs.
  */
-export function hookClosingPairs(...bracketRuleList: ClosingPairsRules[]): EditorPlugin {
-	const cache = new Map<string, ResolvedClosingPairsRules>();
+export function hookClosingPairs(...pairs_rule_list: readonly ClosingPairsRules[]): EditorPlugin {
+	const rules = new Map<string, ResolvedClosingPairsRules>();
 
-	for (const { language, pairs: brackets } of bracketRuleList) {
-		const auto_closing_pairs_open_by_start = new Map();
-		const auto_closing_pairs_open_by_end = new Map();
+	const list = default_pairs.concat(pairs_rule_list);
+
+	for (const { language, pairs } of list) {
+		const auto_closing_pairs_open_by_start = new Map<string, string>();
+		const auto_closing_pairs_open_by_end = new Map<string, string>();
 		const auto_closing_paris = new Set<string>();
-		brackets.forEach(([open, close]) => {
+		pairs.forEach(([open, close]) => {
 			auto_closing_pairs_open_by_start.set(open, close);
 			auto_closing_pairs_open_by_end.set(close, open);
 			auto_closing_paris.add(open + close);
 		});
-		cache.set(language, {
+		rules.set(language, {
 			auto_closing_pairs_open_by_start,
 			auto_closing_pairs_open_by_end,
 			auto_closing_pairs: auto_closing_paris,
@@ -39,7 +41,7 @@ export function hookClosingPairs(...bracketRuleList: ClosingPairsRules[]): Edito
 
 	return ({ input }, options) => {
 		const onKeydown = (e: KeyboardEvent) => {
-			const config = cache.get(options.language);
+			const config = rules.get(options.language);
 			if (!config) {
 				return;
 			}
@@ -107,6 +109,10 @@ export function hookClosingPairs(...bracketRuleList: ClosingPairsRules[]): Edito
 	};
 }
 
+function isBackspace(e: KeyboardEvent) {
+	return e.key === "Backspace" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey;
+}
+
 export const pairs_parentheses = ["(", ")"] satisfies ClosingPair;
 export const pairs_brackets = ["[", "]"] satisfies ClosingPair;
 export const pairs_braces = ["{", "}"] satisfies ClosingPair;
@@ -132,7 +138,7 @@ const c_lang_pairs_with_backticks: ClosingPair[] = [
 	pairs_backticks,
 ];
 
-export const default_pairs: ClosingPairsRules[] = [
+export const default_pairs: readonly ClosingPairsRules[] = [
 	{
 		language: "c",
 		pairs: c_lang_pairs,
@@ -202,7 +208,3 @@ export const default_pairs: ClosingPairsRules[] = [
 		pairs: c_lang_pairs_with_backticks,
 	},
 ];
-
-function isBackspace(e: KeyboardEvent) {
-	return e.key === "Backspace" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey;
-}

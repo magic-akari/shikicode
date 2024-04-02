@@ -16,4 +16,3 @@ export type EditorPlugin = {
 export * from "./autoload.js";
 export * from "./closing_pairs.js";
 export * from "./tab.js";
-
