@@ -13,16 +13,17 @@ export function autoload(editor: ShikiEditor): IDisposeable {
 		const themes = editor.highlighter.getLoadedThemes();
 		const langs = editor.highlighter.getLoadedLanguages();
 
-		themes.push("none");
-		langs.push("text");
+		const task_list = [];
 
-		if (newOptions.theme !== void 0 && !themes.includes(newOptions.theme)) {
-			await editor.highlighter.loadTheme(newOptions.theme);
+		if (newOptions.theme !== void 0 && newOptions.theme !== "none" && !themes.includes(newOptions.theme)) {
+			task_list.push(editor.highlighter.loadTheme(newOptions.theme));
 		}
 
-		if (newOptions.language !== void 0 && !langs.includes(newOptions.language)) {
-			await editor.highlighter.loadLanguage(newOptions.language);
+		if (newOptions.language !== void 0 && newOptions.language !== "text" && !langs.includes(newOptions.language)) {
+			task_list.push(editor.highlighter.loadLanguage(newOptions.language));
 		}
+
+		await Promise.all(task_list);
 
 		updateOptions(newOptions);
 	};
