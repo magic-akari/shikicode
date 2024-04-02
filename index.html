@@ -61,15 +61,25 @@
 			>
 import * as shiki from "shiki";
 import { shikiEditor } from "shiki-editor";
-import { hookBracket, hookTab } from "shiki-editor/plugins";
+import { hookClosingPairs, hookTab } from "shiki-editor/plugins";
 
 const theme = "github-dark";
-const language = "tsx";
+const language = "javascript";
 
 const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
 
 const editor = shikiEditor()
-	.withPlugins(hookBracket, hookTab)
+	.withPlugins(
+		hookTab,
+		hookClosingPairs({
+			language,
+			pairs: [
+				["(", ")"],
+				["[", "]"],
+				["{", "}"],
+			],
+		}),
+	)
 	.create(container, h, {
 		value: `console.log("Hello, shiki-editor 👋!");`,
 		language,
@@ -89,7 +99,7 @@ const editor = shikiEditor()
 		import * as shiki from "shiki";
 		import { bundledLanguagesInfo, bundledThemesInfo } from "shiki";
 		import { shikiEditor } from "./lib/index.js";
-		import { autoload, hookBracket, hookTab } from "./lib/plugins/index.js";
+		import { autoload, hookClosingPairs, hookTab, default_pairs } from "./lib/plugins/index.js";
 
 		bundledLanguagesInfo.forEach((lang) => {
 			const option = document.createElement("option");
@@ -113,11 +123,13 @@ const editor = shikiEditor()
 
 		const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
 
-		const editor = shikiEditor().withPlugins(hookBracket, hookTab, autoload).create(container, h, {
-			value: example.value,
-			language,
-			theme,
-		});
+		const editor = shikiEditor()
+			.withPlugins(hookClosingPairs(...default_pairs), hookTab, autoload)
+			.create(container, h, {
+				value: example.value,
+				language,
+				theme,
+			});
 
 		lang_list.addEventListener("change", (e) => {
 			editor.updateOptions({
