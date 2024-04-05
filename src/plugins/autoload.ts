@@ -1,4 +1,4 @@
-import type { IDisposeable, ShikiEditor } from "./index.js";
+import type { IDisposable, ShikiEditor } from "./index.js";
 
 /**
  * Automatically load languages and themes when they are not already loaded.
@@ -6,7 +6,7 @@ import type { IDisposeable, ShikiEditor } from "./index.js";
  * It's recommended to handle shiki highlighter by yourself if you know all the languages and themes you will use.
  * This plugin will convert the `updateOptions` method to async method.
  */
-export function autoload(editor: ShikiEditor): IDisposeable {
+export function autoload(editor: ShikiEditor): IDisposable {
 	const updateOptions = editor.updateOptions;
 
 	editor.updateOptions = async (newOptions) => {

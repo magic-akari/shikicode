@@ -1,5 +1,5 @@
 import { ceilTab, floorTab, setRangeText, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
-import type { IDisposeable, ShikiEditor } from "./index.js";
+import type { IDisposable, ShikiEditor } from "./index.js";
 
 export interface IndentConfig {
 	tabSize: number;
@@ -398,7 +398,7 @@ function getLineEnd(text: string, index: number): number {
 /**
  * A plugin that automatically inserts or removes indentation.
  */
-export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposeable {
+export function hookTab({ input }: ShikiEditor, config: IndentConfig): IDisposable {
 	const onKeydown = (e: KeyboardEvent) => {
 		switch (e.key) {
 			case "Tab": {
