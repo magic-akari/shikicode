@@ -1,4 +1,4 @@
-const style = `.shiki-editor.input, .shiki-editor.output {
+const style = `.shikicode.input, .shikicode.output {
 	font-family: var(--font-family, monospace);
 	font-size: inherit;
 	line-height: inherit;
@@ -10,7 +10,7 @@ const style = `.shiki-editor.input, .shiki-editor.output {
 	inset: 0;
 }
 
-.shiki-editor.input {
+.shikicode.input {
 	resize: none;
 	color: transparent;
 	caret-color: var(--fg, black);
@@ -24,21 +24,21 @@ const style = `.shiki-editor.input, .shiki-editor.output {
 	overflow: auto;
 }
 
-.shiki-editor.output {
+.shikicode.output {
 	pointer-events: none;
 	counter-reset: shiki-line 0;
 	overflow: hidden;
 }
 
-.shiki-editor.output > pre {
+.shikicode.output > pre {
 	display: contents;
 }
 
-.shiki-editor.output .line {
+.shikicode.output .line {
 	counter-increment: shiki-line 1;
 }
 
-.shiki-editor.output .line::before {
+.shikicode.output .line::before {
 	content: counter(shiki-line);
 	color: var(--bg);
 	background-color: var(--bg);
@@ -50,13 +50,13 @@ const style = `.shiki-editor.input, .shiki-editor.output {
 	left: 0;
 }
 
-.shiki-editor.output.line-numbers .line::before {
+.shikicode.output.line-numbers .line::before {
 	color: var(--fg);
 	width: 5em;
 	padding-right: 2em;
 }
 
-.shiki-editor.input.line-numbers {
+.shikicode.input.line-numbers {
 	padding-left: 5em;
 }
 `;
@@ -64,7 +64,7 @@ const style = `.shiki-editor.input, .shiki-editor.output {
 function noop() {}
 
 export function injectStyle(doc: Document) {
-	const hash = `shiki-editor-${djb2(style).toString(36)}`;
+	const hash = `shikicode-${djb2(style).toString(36)}`;
 	if (doc.getElementById(hash)) return noop;
 	const element = doc.createElement("style");
 	element.id = hash;

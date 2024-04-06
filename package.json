@@ -1,5 +1,5 @@
 {
-	"name": "shiki-editor",
+	"name": "shikicode",
 	"version": "0.0.0",
 	"description": "lightweight code editor powered by shiki",
 	"main": "lib/index.js",
@@ -11,11 +11,11 @@
 		"check:fmt": "dprint check",
 		"check:lint": "oxlint src -D correctness -D pedantic"
 	},
-	"keywords": ["shiki", "editor"],
+	"keywords": ["shiki", "code", "editor"],
 	"author": "magic-akari <akari.ccino@gmail.com>",
 	"license": "MIT",
-	"bugs": "https://github.com/magic-akari/shiki-editor/issues",
-	"homepage": "https://github.com/magic-akari/shiki-editor#readme",
+	"bugs": "https://github.com/magic-akari/shikicode/issues",
+	"homepage": "https://github.com/magic-akari/shikicode#readme",
 	"devDependencies": {
 		"@types/jest": "^29.5.12",
 		"dprint": "^0.45.0",

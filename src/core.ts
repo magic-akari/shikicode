@@ -41,13 +41,13 @@ export interface UpdateOptions extends ShikiOptions {
 	readonly theme?: "none" | BundledTheme;
 }
 
-interface ShikiEditorFactory {
-	create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor;
-	withOptions(options: Readonly<UpdateOptions>): ShikiEditorFactory;
-	withPlugins(...plugins: EditorPlugin[]): ShikiEditorFactory;
+interface ShikiCodeFactory {
+	create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiCode;
+	withOptions(options: Readonly<UpdateOptions>): ShikiCodeFactory;
+	withPlugins(...plugins: EditorPlugin[]): ShikiCodeFactory;
 }
 
-export interface ShikiEditor {
+export interface ShikiCode {
 	readonly input: HTMLTextAreaElement;
 	readonly output: HTMLDivElement;
 	readonly container: HTMLElement;
@@ -83,19 +83,19 @@ const defaultOptions = {
 	insertSpaces: true,
 } as const;
 
-export function shikiEditor(): ShikiEditorFactory {
+export function shikiCode(): ShikiCodeFactory {
 	const editor_options = { ...defaultOptions };
 	const plugin_list: EditorPlugin[] = [];
 
 	return {
-		create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiEditor {
+		create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiCode {
 			return create(domElement, highlighter, { value: "", ...editor_options, ...options }, plugin_list);
 		},
-		withOptions(options: UpdateOptions): ShikiEditorFactory {
+		withOptions(options: UpdateOptions): ShikiCodeFactory {
 			Object.assign(editor_options, options);
 			return this;
 		},
-		withPlugins(...plugins: EditorPlugin[]): ShikiEditorFactory {
+		withPlugins(...plugins: EditorPlugin[]): ShikiCodeFactory {
 			plugin_list.push(...plugins);
 			return this;
 		},
@@ -107,7 +107,7 @@ function create(
 	highlighter: Highlighter,
 	editor_options: FullOptions,
 	plugin_list: EditorPlugin[],
-): ShikiEditor {
+): ShikiCode {
 	const doc = domElement.ownerDocument;
 
 	const output = doc.createElement("div");
@@ -145,7 +145,7 @@ function create(
 		injectStyle(doc),
 	];
 
-	const editor: ShikiEditor = {
+	const editor: ShikiCode = {
 		input,
 		output,
 		container: domElement,
@@ -220,8 +220,8 @@ function initIO(input: HTMLTextAreaElement, output: HTMLElement) {
 	input.setAttribute("autocorrect", "off");
 	input.setAttribute("spellcheck", "false");
 
-	input.classList.add("shiki-editor", "input");
-	output.classList.add("shiki-editor", "output");
+	input.classList.add("shikicode", "input");
+	output.classList.add("shikicode", "output");
 }
 
 function shouldUpdateIO(config: FullOptions, newOptions: UpdateOptions) {

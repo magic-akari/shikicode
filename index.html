@@ -60,21 +60,21 @@
 				id="example"
 			>
 import * as shiki from "shiki";
-import { shikiEditor } from "shiki-editor";
-import { hookClosingPairs, hookTab } from "shiki-editor/plugins";
+import { shikiCode } from "shikicode";
+import { hookClosingPairs, hookTab } from "shikicode/plugins";
 
 const theme = "github-dark";
 const language = "javascript";
 
 const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
 
-const editor = shikiEditor()
+const editor = shikiCode()
 	.withPlugins(
 		hookTab,
 		hookClosingPairs(),
 	)
 	.create(container, h, {
-		value: `console.log("Hello, shiki-editor 👋!");`,
+		value: `console.log("Hello, shikicode 👋!");`,
 		language,
 		theme,
 	});
@@ -91,7 +91,7 @@ const editor = shikiEditor()
 		<script type="module">
 		import * as shiki from "shiki";
 		import { bundledLanguagesInfo, bundledThemesInfo } from "shiki";
-		import { shikiEditor } from "./lib/index.js";
+		import { shikiCode } from "./lib/index.js";
 		import { autoload, hookClosingPairs, hookTab } from "./lib/plugins/index.js";
 
 		bundledLanguagesInfo.forEach((lang) => {
@@ -116,7 +116,7 @@ const editor = shikiEditor()
 
 		const h = await shiki.getHighlighter({ langs: [language], themes: [theme] });
 
-		const editor = shikiEditor().withPlugins(hookClosingPairs(), hookTab, autoload).create(container, h, {
+		const editor = shikiCode().withPlugins(hookClosingPairs(), hookTab, autoload).create(container, h, {
 			value: example.value,
 			language,
 			theme,
