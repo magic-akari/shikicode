@@ -7,6 +7,7 @@
 	"scripts": {
 		"start": "tsc --watch",
 		"build": "tsc",
+		"prepack": "tsc",
 		"fix:fmt": "dprint fmt",
 		"check:fmt": "dprint check",
 		"check:lint": "oxlint src -D correctness -D pedantic"
@@ -25,5 +26,16 @@
 	},
 	"peerDependencies": {
 		"shiki": "^1.2.0"
+	},
+	"exports": {
+		".": {
+			"types": "./lib/index.d.ts",
+			"default": "./lib/index.js"
+		},
+		"./plugins": {
+			"types": "./lib/plugins/index.d.ts",
+			"default": "./lib/plugins/index.js"
+		},
+		"./package.json": "./package.json"
 	}
 }
