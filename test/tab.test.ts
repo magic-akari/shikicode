@@ -1,4 +1,4 @@
-import { Action, PatchAction, SelectAction, State, indentText, outdentText } from "../src/tab";
+import { Action, PatchAction, SelectAction, State, indentText, outdentText } from "../src/plugins";
 
 interface TabConfig {
 	tabSize: number;
