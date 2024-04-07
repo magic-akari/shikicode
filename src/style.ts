@@ -1,5 +1,4 @@
 const style = `.shikicode.input, .shikicode.output {
-	font-family: var(--font-family, monospace);
 	font-size: inherit;
 	line-height: inherit;
 	tab-size: var(--tab-size);
@@ -8,6 +7,10 @@ const style = `.shikicode.input, .shikicode.output {
 	padding: 0;
 	position: absolute;
 	inset: 0;
+}
+
+.shikicode.input, .shikicode.output, .shikicode.output code {
+	font-family: var(--font-family, monospace);
 }
 
 .shikicode.input {
