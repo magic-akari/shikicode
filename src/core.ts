@@ -4,47 +4,50 @@ import type { EditorPlugin } from "./plugins/index.js";
 import { hookScroll } from "./scroll.js";
 import { injectStyle } from "./style.js";
 
-export interface ShikiOptions {
-	/**
-	 * Control the rendering of line numbers.
-	 * Defaults to `on`.
-	 */
-	readonly lineNumbers?: "on" | "off";
-	/**
-	 * Should the editor be read only.
-	 * Defaults to false.
-	 */
-	readonly readOnly?: boolean;
+export interface IndentOptions {
 	/**
 	 * The number of spaces a tab is equal to.
 	 * This setting is overridden based on the file contents when `detectIndentation` is on.
 	 * Defaults to 4.
 	 */
-	readonly tabSize?: number;
+	readonly tabSize: number;
 	/**
 	 * Insert spaces when pressing `Tab`.
 	 * This setting is overridden based on the file contents when `detectIndentation` is on.
 	 * Defaults to true.
 	 */
-	readonly insertSpaces?: boolean;
+	readonly insertSpaces: boolean;
 }
 
-export interface InitOptions {
-	readonly value?: string;
+export interface EditorOptions extends IndentOptions {
+	/**
+	 * Control the rendering of line numbers.
+	 * Defaults to `on`.
+	 */
+	readonly lineNumbers: "on" | "off";
+	/**
+	 * Should the editor be read only.
+	 * Defaults to false.
+	 */
+	readonly readOnly: boolean;
 	readonly language: "text" | BundledLanguage;
 	readonly theme: "none" | BundledTheme;
 }
 
-export interface UpdateOptions extends ShikiOptions {
+export interface InitOptions extends Pick<EditorOptions, "language" | "theme"> {
 	readonly value?: string;
-	readonly language?: "text" | BundledLanguage;
-	readonly theme?: "none" | BundledTheme;
+}
+
+export interface UpdateOptions extends Partial<EditorOptions> {}
+
+interface EditorOptionsWithValue extends EditorOptions {
+	readonly value: string;
 }
 
 interface ShikiCodeFactory {
 	create(domElement: HTMLElement, highlighter: Highlighter, options: InitOptions): ShikiCode;
-	withOptions(options: Readonly<UpdateOptions>): ShikiCodeFactory;
-	withPlugins(...plugins: EditorPlugin[]): ShikiCodeFactory;
+	withOptions(options: UpdateOptions): ShikiCodeFactory;
+	withPlugins(...plugins: readonly EditorPlugin[]): ShikiCodeFactory;
 }
 
 export interface ShikiCode {
@@ -73,8 +76,6 @@ export interface ShikiCode {
 
 	dispose(): void;
 }
-
-type FullOptions = Required<UpdateOptions>;
 
 const defaultOptions = {
 	lineNumbers: "on",
@@ -105,7 +106,7 @@ export function shikiCode(): ShikiCodeFactory {
 function create(
 	domElement: HTMLElement,
 	highlighter: Highlighter,
-	editor_options: FullOptions,
+	editor_options: EditorOptionsWithValue,
 	plugin_list: EditorPlugin[],
 ): ShikiCode {
 	const doc = domElement.ownerDocument;
@@ -172,12 +173,12 @@ function create(
 				updateContainer(domElement, highlighter, newOptions.theme!);
 			}
 
-			const should_rerender = shouldRerender(editor_options, newOptions, input.value);
+			const should_rerender = shouldRerender(editor_options, newOptions);
 
 			Object.assign(editor_options, newOptions);
 
 			if (should_rerender) {
-				forceRender(newOptions.value === void 0 ? input.value : newOptions.value);
+				forceRender();
 			}
 		},
 
@@ -204,7 +205,7 @@ function initContainer(container: HTMLElement) {
 	container.style.position = "relative";
 }
 
-function shouldUpdateContainer(config: FullOptions, newOptions: UpdateOptions) {
+function shouldUpdateContainer(config: EditorOptions, newOptions: UpdateOptions) {
 	return newOptions.theme !== void 0 && newOptions.theme !== config.theme;
 }
 
@@ -224,7 +225,7 @@ function initIO(input: HTMLTextAreaElement, output: HTMLElement) {
 	output.classList.add("shikicode", "output");
 }
 
-function shouldUpdateIO(config: FullOptions, newOptions: UpdateOptions) {
+function shouldUpdateIO(config: EditorOptions, newOptions: UpdateOptions) {
 	return (
 		(newOptions.lineNumbers !== void 0 && newOptions.lineNumbers !== config.lineNumbers) ||
 		(newOptions.tabSize !== void 0 && newOptions.tabSize !== config.tabSize) ||
@@ -264,10 +265,9 @@ function render(output: HTMLElement, highlighter: Highlighter, value: string, la
 	});
 }
 
-function shouldRerender(config: FullOptions, newOptions: UpdateOptions, value: string) {
+function shouldRerender(options: EditorOptions, newOptions: UpdateOptions) {
 	return (
-		(newOptions.theme !== void 0 && newOptions.theme !== config.theme) ||
-		(newOptions.language !== void 0 && newOptions.language !== config.language) ||
-		(newOptions.value !== void 0 && newOptions.value !== value)
+		(newOptions.theme !== void 0 && newOptions.theme !== options.theme) ||
+		(newOptions.language !== void 0 && newOptions.language !== options.language)
 	);
 }

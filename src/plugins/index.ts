@@ -1,16 +1,10 @@
-import type { BundledLanguage, BundledTheme } from "shiki";
-import type { ShikiCode, ShikiOptions } from "../core.js";
+import type { EditorOptions, ShikiCode } from "../core.js";
 
 export type IDisposable = () => void;
-export type { ShikiCode } from "../core.js";
-
-export interface PluginOptions extends ShikiOptions {
-	readonly language: "text" | BundledLanguage;
-	readonly theme: "none" | BundledTheme;
-}
+export type { EditorOptions, IndentOptions, ShikiCode } from "../core.js";
 
 export type EditorPlugin = {
-	(editor: ShikiCode, options: PluginOptions): IDisposable;
+	(editor: ShikiCode, options: EditorOptions): IDisposable;
 };
 
 export * from "./autoload.js";

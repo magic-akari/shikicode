@@ -1,29 +1,12 @@
-import { ceilTab, floorTab, setRangeText, visibleWidthFromLeft, visibleWidthLeadingSpace } from "./common.js";
-import type { IDisposable, ShikiCode } from "./index.js";
-
-export interface IndentConfig {
-	tabSize: number;
-	insertSpaces: boolean;
-}
-
-export interface State {
-	/**
-	 * The whole text content.
-	 */
-	value: string;
-	/**
-	 * The start of the selection.
-	 */
-	selectionStart: number;
-	/**
-	 * The end of the selection.
-	 */
-	selectionEnd: number;
-	/**
-	 * The direction of the selection.
-	 */
-	selectionDirection?: "forward" | "backward" | "none";
-}
+import {
+	ceilTab,
+	floorTab,
+	setRangeText,
+	visibleWidthFromLeft,
+	visibleWidthLeadingSpace,
+	type InputState,
+} from "./common.js";
+import type { IDisposable, IndentOptions, ShikiCode } from "./index.js";
 
 export interface PatchAction {
 	value: string;
@@ -51,21 +34,21 @@ export interface Action {
 
 const empty_action: Action = {};
 
-export function indentText(input: State, config: IndentConfig): Action {
+export function indentText(input: InputState, options: IndentOptions): Action {
 	if (
 		input.selectionStart !== input.selectionEnd &&
 		(bothEndsSelected(input.value, input.selectionStart, input.selectionEnd) ||
 			input.value.slice(input.selectionStart, input.selectionEnd).includes("\n"))
 	) {
-		return blockIndentText(input, config);
+		return blockIndentText(input, options);
 	}
 
-	return simpleIndentText(input, config);
+	return simpleIndentText(input, options);
 }
 
-function simpleIndentText(input: State, config: IndentConfig): Action {
+function simpleIndentText(input: InputState, options: IndentOptions): Action {
 	const { value, selectionStart, selectionEnd } = input;
-	const { tabSize, insertSpaces } = config;
+	const { tabSize, insertSpaces } = options;
 
 	if (!insertSpaces) {
 		return {
@@ -90,8 +73,8 @@ function simpleIndentText(input: State, config: IndentConfig): Action {
 	};
 }
 
-function blockIndentText(input: State, config: IndentConfig): Action {
-	const { tabSize, insertSpaces } = config;
+function blockIndentText(input: InputState, options: IndentOptions): Action {
+	const { tabSize, insertSpaces } = options;
 	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
 	const block_start = getLineStart(value, selectionStart);
@@ -171,8 +154,8 @@ function blockIndentText(input: State, config: IndentConfig): Action {
 	} satisfies Action;
 }
 
-export function outdentText(input: State, config: IndentConfig): Action {
-	const { tabSize, insertSpaces } = config;
+export function outdentText(input: InputState, options: IndentOptions): Action {
+	const { tabSize, insertSpaces } = options;
 	const { value, selectionStart, selectionEnd, selectionDirection } = input;
 
 	const block_start = getLineStart(value, selectionStart);
@@ -253,7 +236,7 @@ export function outdentText(input: State, config: IndentConfig): Action {
 	} satisfies Action;
 }
 
-function enter(input: State, config: IndentConfig): Action {
+function enter(input: InputState, options: IndentOptions): Action {
 	if (input.selectionStart !== input.selectionEnd) {
 		return empty_action;
 	}
@@ -264,23 +247,23 @@ function enter(input: State, config: IndentConfig): Action {
 	}
 
 	const line = value.slice(line_start, selectionStart);
-	let [leading_space] = visibleWidthLeadingSpace(line, config.tabSize);
-	leading_space = floorTab(leading_space, config.tabSize);
+	let [leading_space] = visibleWidthLeadingSpace(line, options.tabSize);
+	leading_space = floorTab(leading_space, options.tabSize);
 	let indent_space = leading_space;
 
 	switch (value[selectionStart - 1]) {
 		case "(":
 		case "[":
 		case "{": {
-			indent_space += config.tabSize;
+			indent_space += options.tabSize;
 		}
 	}
 
 	let replacement = "\n";
-	if (config.insertSpaces) {
+	if (options.insertSpaces) {
 		replacement += " ".repeat(indent_space);
 	} else {
-		replacement += "\t".repeat(indent_space / config.tabSize);
+		replacement += "\t".repeat(indent_space / options.tabSize);
 	}
 
 	let select: SelectAction | undefined;
@@ -295,10 +278,10 @@ function enter(input: State, config: IndentConfig): Action {
 				direction: "none",
 			};
 
-			if (config.insertSpaces) {
+			if (options.insertSpaces) {
 				replacement += "\n" + " ".repeat(leading_space);
 			} else {
-				replacement += "\n" + "\t".repeat(leading_space / config.tabSize);
+				replacement += "\n" + "\t".repeat(leading_space / options.tabSize);
 			}
 		}
 	}
@@ -314,7 +297,7 @@ function enter(input: State, config: IndentConfig): Action {
 	};
 }
 
-function backspace(input: State, config: IndentConfig): Action {
+function backspace(input: InputState, options: IndentOptions): Action {
 	const { value, selectionStart, selectionEnd } = input;
 	if (selectionStart !== selectionEnd) {
 		return empty_action;
@@ -331,14 +314,14 @@ function backspace(input: State, config: IndentConfig): Action {
 		switch (value[i]) {
 			case " ": {
 				width++;
-				if (width % config.tabSize === 0) {
+				if (width % options.tabSize === 0) {
 					last_tab_stop = i;
 				}
 				break;
 			}
 			case "\t": {
 				last_tab_stop = i;
-				width = ceilTab(width + 1, config.tabSize);
+				width = ceilTab(width + 1, options.tabSize);
 				break;
 			}
 			default: {
@@ -398,14 +381,14 @@ function getLineEnd(text: string, index: number): number {
 /**
  * A plugin that automatically inserts or removes indentation.
  */
-export function hookTab({ input }: ShikiCode, config: IndentConfig): IDisposable {
+export function hookTab({ input }: ShikiCode, options: IndentOptions): IDisposable {
 	const onKeydown = (e: KeyboardEvent) => {
 		switch (e.key) {
 			case "Tab": {
 				e.preventDefault();
 
 				const action = e.shiftKey ? outdentText : indentText;
-				const { patch, select } = action(e.target as HTMLTextAreaElement, config);
+				const { patch, select } = action(e.target as HTMLTextAreaElement, options);
 				if (patch) {
 					setRangeText(input, patch.value, patch.start, patch.end, patch.mode);
 					input.dispatchEvent(new Event("input"));
@@ -419,7 +402,7 @@ export function hookTab({ input }: ShikiCode, config: IndentConfig): IDisposable
 			}
 
 			case "Enter": {
-				const { patch, select } = enter(e.target as HTMLTextAreaElement, config);
+				const { patch, select } = enter(e.target as HTMLTextAreaElement, options);
 				if (patch || select) {
 					e.preventDefault();
 				}
@@ -436,7 +419,7 @@ export function hookTab({ input }: ShikiCode, config: IndentConfig): IDisposable
 			}
 
 			case "Backspace": {
-				const { select } = backspace(e.target as HTMLTextAreaElement, config);
+				const { select } = backspace(e.target as HTMLTextAreaElement, options);
 				if (select) {
 					input.setSelectionRange(select.start, select.end, select.direction);
 					input.dispatchEvent(new Event("selectionchange"));

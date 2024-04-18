@@ -107,3 +107,22 @@ export function setRangeText(
 		}
 	}
 }
+
+export interface InputState {
+	/**
+	 * The whole text content.
+	 */
+	value: string;
+	/**
+	 * The start of the selection.
+	 */
+	selectionStart: number;
+	/**
+	 * The end of the selection.
+	 */
+	selectionEnd: number;
+	/**
+	 * The direction of the selection.
+	 */
+	selectionDirection?: "forward" | "backward" | "none";
+}
