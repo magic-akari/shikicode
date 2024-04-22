@@ -1,12 +1,12 @@
 const style = `.shikicode.input, .shikicode.output {
+	position: absolute;
+	margin: 0;
+	inset: 0;
+	border: 0;
+	padding: 0;
 	font-size: inherit;
 	line-height: inherit;
 	tab-size: var(--tab-size);
-	border: 0;
-	margin: 0;
-	padding: 0;
-	position: absolute;
-	inset: 0;
 }
 
 .shikicode.input, .shikicode.output, .shikicode.output code {
@@ -14,23 +14,23 @@ const style = `.shikicode.input, .shikicode.output {
 }
 
 .shikicode.input {
+	box-sizing: border-box;
+	outline: none;
+	background-color: transparent;
+	padding-left: 2em;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
 	resize: none;
 	color: transparent;
 	caret-color: var(--fg, black);
 	white-space: pre;
-	box-sizing: border-box;
-	background-color: transparent;
-	outline: none;
-	width: 100%;
-	height: 100%;
-	padding-left: 2em;
-	overflow: auto;
 }
 
 .shikicode.output {
-	pointer-events: none;
 	counter-reset: shiki-line 0;
 	overflow: hidden;
+	pointer-events: none;
 }
 
 .shikicode.output > pre {
@@ -42,21 +42,21 @@ const style = `.shikicode.input, .shikicode.output {
 }
 
 .shikicode.output .line::before {
-	content: counter(shiki-line);
-	color: var(--bg);
-	background-color: var(--bg);
-	text-align: right;
-	box-sizing: border-box;
-	width: 2em;
 	display: inline-block;
 	position: sticky;
 	left: 0;
+	box-sizing: border-box;
+	background-color: var(--bg);
+	width: 2em;
+	content: counter(shiki-line);
+	color: var(--bg);
+	text-align: right;
 }
 
 .shikicode.output.line-numbers .line::before {
-	color: var(--fg);
-	width: 5em;
 	padding-right: 2em;
+	width: 5em;
+	color: var(--fg);
 }
 
 .shikicode.input.line-numbers {
