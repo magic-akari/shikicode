@@ -1,3 +1,4 @@
+import type { BundledLanguage, BundledTheme } from "shiki";
 import type { IDisposable, ShikiCode } from "./index.js";
 
 /**
@@ -16,11 +17,11 @@ export function autoload(editor: ShikiCode): IDisposable {
 		const task_list = [];
 
 		if (newOptions.theme !== void 0 && newOptions.theme !== "none" && !themes.includes(newOptions.theme)) {
-			task_list.push(editor.highlighter.loadTheme(newOptions.theme));
+			task_list.push(editor.highlighter.loadTheme(newOptions.theme as unknown as BundledTheme));
 		}
 
 		if (newOptions.language !== void 0 && newOptions.language !== "text" && !langs.includes(newOptions.language)) {
-			task_list.push(editor.highlighter.loadLanguage(newOptions.language));
+			task_list.push(editor.highlighter.loadLanguage(newOptions.language as BundledLanguage));
 		}
 
 		await Promise.all(task_list);
