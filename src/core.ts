@@ -30,8 +30,8 @@ export interface EditorOptions extends IndentOptions {
 	 * Defaults to false.
 	 */
 	readonly readOnly: boolean;
-	readonly language: "text" | BundledLanguage;
-	readonly theme: "none" | BundledTheme;
+	readonly language: BundledLanguage | "plaintext" | "txt" | "text" | "plain" | (string & {});
+	readonly theme: BundledTheme | "none" | (string & {});
 }
 
 export interface InitOptions extends Pick<EditorOptions, "language" | "theme"> {
