@@ -68,7 +68,7 @@
 		<script type="importmap">
 		{
 			"imports": {
-				"shiki": "https://esm.run/shiki@1.9.0",
+				"shiki": "https://esm.run/shiki@1.22.0",
 				"shikicode": "./lib/index.js",
 				"shikicode/plugins": "./lib/plugins/index.js"
 			}
@@ -107,7 +107,7 @@
 		</script>
 		<script type="module" id="app_script">
 		// ^^^^^^^^^    ^^^^^^^^^^ The selectors are not part of shikicode
-		import { getHighlighter } from "shiki";
+		import { createHighlighter } from "shiki";
 		import { shikiCode } from "shikicode";
 		import { autoload, hookClosingPairs, hookTab } from "shikicode/plugins";
 
@@ -116,7 +116,7 @@
 		const language = "tsx";
 
 		// get the highlighter
-		const h = await getHighlighter({ langs: [language], themes: [theme] });
+		const h = await createHighlighter({ langs: [language], themes: [theme] });
 
 		const editor = shikiCode()
 			// Optionally, you can config some options or add plugins

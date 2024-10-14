@@ -1,26 +1,26 @@
 <style>
 .select {
-	background-color: rgba(173, 214, 255, 0.5);
 	position: relative;
+	background-color: rgba(173, 214, 255, 0.5);
 }
 
 .select::before {
-	content: "";
 	position: absolute;
 	left: -1px;
+	animation: blink 1s infinite;
+	background-color: #0969da;
 	width: 1px;
 	height: 1lh;
-	background-color: #0969da;
-	animation: blink 1s infinite;
+	content: "";
 }
 
 .select::after {
-	content: "";
 	position: absolute;
+	animation: blink 1s infinite;
+	background-color: #0969da;
 	width: 1px;
 	height: 1lh;
-	background-color: #0969da;
-	animation: blink 1s infinite;
+	content: "";
 }
 
 @keyframes blink {
