@@ -223,6 +223,7 @@ function initIO(input: HTMLTextAreaElement, output: HTMLElement) {
 
 	input.classList.add("shikicode", "input");
 	output.classList.add("shikicode", "output");
+	output.setAttribute("inert", "");
 }
 
 function shouldUpdateIO(config: EditorOptions, newOptions: UpdateOptions) {
