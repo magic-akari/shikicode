@@ -12,7 +12,11 @@
 		"check:fmt": "dprint check",
 		"check:lint": "oxlint src -D correctness -D pedantic"
 	},
-	"keywords": ["shiki", "code", "editor"],
+	"keywords": [
+		"shiki",
+		"code",
+		"editor"
+	],
 	"author": "magic-akari <akari.ccino@gmail.com>",
 	"license": "MIT",
 	"bugs": "https://github.com/magic-akari/shikicode/issues",
@@ -38,5 +42,5 @@
 		},
 		"./package.json": "./package.json"
 	},
-	"packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
+	"packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321"
 }
