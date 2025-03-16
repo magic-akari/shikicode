@@ -20,7 +20,7 @@
 	"devDependencies": {
 		"@types/jest": "^29.5.13",
 		"dprint": "^0.48.0",
-		"oxlint": "^0.9.10",
+		"oxlint": "^0.16.0",
 		"shiki": "^1.22.0",
 		"typescript": "^5.6.3"
 	},
