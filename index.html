@@ -68,7 +68,7 @@
 		<script type="importmap">
 		{
 			"imports": {
-				"shiki": "https://esm.run/shiki@1.22.0",
+				"shiki": "https://cdn.jsdelivr.net/npm/shiki@3.2.2/+esm",
 				"shikicode": "./lib/index.js",
 				"shikicode/plugins": "./lib/plugins/index.js"
 			}
@@ -77,81 +77,76 @@
 		<script type="module">
 		import { bundledLanguagesInfo, bundledThemesInfo } from "shiki";
 
-		bundledLanguagesInfo.forEach((lang) => {
-			const option = document.createElement("option");
-			option.value = lang.id;
-			option.textContent = lang.name;
-			lang_list.append(option);
-		});
+bundledLanguagesInfo.forEach((lang) => {
+	const option = document.createElement("option");
+	option.value = lang.id;
+	option.textContent = lang.name;
+	lang_list.append(option);
+});
 
-		bundledThemesInfo.forEach((theme) => {
-			const option = document.createElement("option");
-			option.value = theme.id;
-			option.textContent = theme.displayName;
-			theme_list.append(option);
-		});
+bundledThemesInfo.forEach((theme) => {
+	const option = document.createElement("option");
+	option.value = theme.id;
+	option.textContent = theme.displayName;
+	theme_list.append(option);
+});
 
-		lang_list.addEventListener("change", (e) => {
-			editor.updateOptions({
-				language: e.target.value,
-			});
-		});
-		theme_list.addEventListener("change", (e) => {
-			editor.updateOptions({
-				theme: e.target.value,
-			});
-		});
+lang_list.addEventListener("change", (e) => {
+	editor.updateOptions({
+		language: e.target.value,
+	});
+});
+theme_list.addEventListener("change", (e) => {
+	editor.updateOptions({
+		theme: e.target.value,
+	});
+});
 
-		theme_list.value = "github-dark";
-		lang_list.value = "tsx";
+theme_list.value = "github-dark";
+lang_list.value = "tsx";
 		</script>
 		<script type="module" id="app_script">
 		// ^^^^^^^^^    ^^^^^^^^^^ The selectors are not part of shikicode
-		import { createHighlighter } from "shiki";
-		import { shikiCode } from "shikicode";
-		import { autoload, hookClosingPairs, hookTab, comments } from "shikicode/plugins";
+import { createHighlighter } from "shiki";
+import { shikiCode } from "shikicode";
+import { autoload, hookClosingPairs, hookTab, comments } from "shikicode/plugins";
 
-		// declare your theme and language
-		const theme = "github-dark";
-		const language = "tsx";
+// declare your theme and language
+const theme = "github-dark";
+const language = "tsx";
 
-		// get the highlighter
-		const h = await createHighlighter({ langs: [language], themes: [theme] });
+// get the highlighter
+const h = await createHighlighter({ langs: [language], themes: [theme] });
 
-		const editor = shikiCode()
-			// Optionally, you can config some options or add plugins
-			// by using the `withOptions` and `withPlugins` method
-			.withPlugins(
-				comments({ language: "tsx", lineComment: "//" }),
-				// You can add your own plugins here as well
-				// `hookClosingPairs` will automatically close the brackets, braces, etc.
-				// Try to type `(`, `[`, or `{` in the editor
-				hookClosingPairs(),
-				// `hookTab` will automatically indent the code when you press the tab key
-				// Try to select random text and press the tab key
-				hookTab,
-				// `autoload` is used to automatically load theme and language,
-				// Normally it is not used unless you are building a playground like this
-				autoload,
-			)
-			.create(container, h, {
-				// Optionally, you can pass some default value to the editor,
-				// such as "Hello, ShikiCode 👋!"
-				value: some_default_value,
-				language,
-				theme,
-			});
+const editor = shikiCode()
+	// Optionally, you can config some options or add plugins
+	// by using the `withOptions` and `withPlugins` method
+	.withPlugins(
+		comments({ language: "tsx", lineComment: "//" }),
+		// You can add your own plugins here as well
+		// `hookClosingPairs` will automatically close the brackets, braces, etc.
+		// Try to type `(`, `[`, or `{` in the editor
+		hookClosingPairs(),
+		// `hookTab` will automatically indent the code when you press the tab key
+		// Try to select random text and press the tab key
+		hookTab,
+		// `autoload` is used to automatically load theme and language,
+		// Normally it is not used unless you are building a playground like this
+		autoload,
+	)
+	.create(container, h, {
+		// Optionally, you can pass some default value to the editor,
+		// such as "Hello, ShikiCode 👋!"
+		value: some_default_value,
+		language,
+		theme,
+	});
 
-		// You can check the editor instance in the console
-		window.editor = editor;
+// You can check the editor instance in the console
+window.editor = editor;
 		</script>
 		<script>
-		var some_default_value =
-		app_script.textContent
-			.trim()
-			.split("\n")
-			.map((line) => (line.startsWith("\t\t") ? line.slice(2) : line))
-			.join("\n") + "\n";
+		var some_default_value = app_script.textContent.trim();
 		</script>
 	</body>
 </html>
