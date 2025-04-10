@@ -109,7 +109,7 @@
 		// ^^^^^^^^^    ^^^^^^^^^^ The selectors are not part of shikicode
 		import { createHighlighter } from "shiki";
 		import { shikiCode } from "shikicode";
-		import { autoload, hookClosingPairs, hookTab } from "shikicode/plugins";
+		import { autoload, hookClosingPairs, hookTab, comments } from "shikicode/plugins";
 
 		// declare your theme and language
 		const theme = "github-dark";
@@ -122,6 +122,7 @@
 			// Optionally, you can config some options or add plugins
 			// by using the `withOptions` and `withPlugins` method
 			.withPlugins(
+				comments({ language: "tsx", lineComment: "//" }),
 				// You can add your own plugins here as well
 				// `hookClosingPairs` will automatically close the brackets, braces, etc.
 				// Try to type `(`, `[`, or `{` in the editor
