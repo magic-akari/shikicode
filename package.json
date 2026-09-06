@@ -19,7 +19,7 @@
 	"homepage": "https://github.com/magic-akari/shikicode#readme",
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
-		"dprint": "^0.49.1",
+		"dprint": "^0.57.0",
 		"oxlint": "^0.16.5",
 		"shiki": "^3.2.2",
 		"typescript": "^5.8.3"
