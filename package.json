@@ -21,11 +21,11 @@
 		"@types/jest": "^29.5.14",
 		"dprint": "^0.49.1",
 		"oxlint": "^0.16.5",
-		"shiki": "^3.2.2",
+		"shiki": "^4.0.0",
 		"typescript": "^5.8.3"
 	},
 	"peerDependencies": {
-		"shiki": "^1 || ^2 || ^3"
+		"shiki": "^1 || ^2 || ^3 || ^4.0.0"
 	},
 	"exports": {
 		".": {
